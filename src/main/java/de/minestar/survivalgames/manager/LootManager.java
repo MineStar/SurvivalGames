@@ -72,9 +72,18 @@ public class LootManager {
     }
 
     public void startGame() {
+        this.refillChests();
+    }
 
+    private void refillChests() {
+        for (LootChest chest : this.chestList) {
+            chest.refill();
+        }
     }
 
     public void endGame() {
+        for (LootChest chest : this.chestList) {
+            chest.clear();
+        }
     }
 }

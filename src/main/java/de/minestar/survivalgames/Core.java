@@ -20,8 +20,12 @@ package de.minestar.survivalgames;
 
 import java.io.File;
 
+import org.bukkit.Bukkit;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import de.minestar.survivalgames.listener.BlockListener;
+import de.minestar.survivalgames.listener.ItemListener;
+import de.minestar.survivalgames.listener.PlayerListener;
 import de.minestar.survivalgames.manager.GameManager;
 import de.minestar.survivalgames.manager.LootManager;
 import de.minestar.survivalgames.manager.PlayerManager;
@@ -53,6 +57,11 @@ public class Core extends JavaPlugin {
         Core.gameManager.onEnable();
         Core.lootManager.onEnable();
         Core.playerManager.onEnable();
+
+        // create listeners
+        Bukkit.getPluginManager().registerEvents(new BlockListener(), this);
+        Bukkit.getPluginManager().registerEvents(new ItemListener(), this);
+        Bukkit.getPluginManager().registerEvents(new PlayerListener(), this);
 
         // print info
         Chat.printMessage(NAME + " version " + VERSION + " enabled!");

@@ -6,6 +6,7 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
+import org.bukkit.event.entity.CreatureSpawnEvent;
 
 import de.minestar.survivalgames.Core;
 import de.minestar.survivalgames.manager.GameManager;
@@ -16,6 +17,11 @@ public class BlockListener implements Listener {
 
     public BlockListener() {
         this.gameManager = Core.gameManager;
+    }
+
+    @EventHandler
+    public void onCreatureSpawn(CreatureSpawnEvent event) {
+        event.setCancelled(true);
     }
 
     @EventHandler

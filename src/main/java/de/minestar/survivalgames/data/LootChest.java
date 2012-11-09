@@ -31,7 +31,7 @@ public class LootChest {
         return (Chest) (location.getBlock().getState());
     }
 
-    private void clear() {
+    public void clear() {
         Chest chest = this.getChest();
         if (chest == null) {
             return;
