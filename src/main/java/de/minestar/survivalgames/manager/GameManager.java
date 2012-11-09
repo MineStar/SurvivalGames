@@ -5,7 +5,7 @@ import de.minestar.survivalgames.data.GameState;
 
 public class GameManager {
 
-    private GameState gameState = GameState.NONE;
+    private GameState gameState = GameState.LOBBY;
 
     public void onEnable() {
 
@@ -15,18 +15,23 @@ public class GameManager {
 
     }
 
-    public void createLobby() {
-        this.endGame();
-        this.gameState = GameState.LOBBY;
+    public void preGame() {
+        this.gameState = GameState.PREGAME;
+        Core.playerManager.preGame();
     }
 
     public void startGame() {
-        this.gameState = GameState.PREGAME;
+        this.gameState = GameState.PRE_PVP;
+        Core.playerManager.startGame();
     }
-    
+
+    public void enablePVP() {
+        this.gameState = GameState.SURVIVAL;
+    }
+
     public void startDeathmatch() {
         this.gameState = GameState.DEATHMATCH;
-        Core.playerManager.teleportAllToSpawn();
+        Core.playerManager.startDeathmatch();
     }
 
     public void endGame() {
@@ -36,7 +41,7 @@ public class GameManager {
     }
 
     public boolean isInGame() {
-        return !this.gameState.equals(GameState.NONE);
+        return !this.gameState.equals(GameState.LOBBY);
     }
 
     public boolean isInDeathmatch() {

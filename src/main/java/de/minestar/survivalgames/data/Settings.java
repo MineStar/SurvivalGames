@@ -24,6 +24,7 @@ public class Settings {
     private static boolean blockWorkbenchInteraction = false;
 
     private static HashSet<PlayerSpawn> playerSpawns;
+    private static PlayerSpawn spectatorSpawn = null, lobbySpawn = null;
     private static File dataFolder, configFile, playerSpawnFile;
 
     static {
@@ -68,11 +69,23 @@ public class Settings {
                 Settings.configFile.delete();
             }
 
+            // save playerspawns
             ArrayList<String> locList = new ArrayList<String>();
             for (PlayerSpawn spawn : Settings.playerSpawns) {
                 locList.add(LocationUtils.toString(spawn.getLocation()));
             }
             config.set("game.playerSpawns", locList);
+
+            // save spectatorspawn
+            if (Settings.spectatorSpawn != null) {
+                config.set("game.spectatorSpawn", LocationUtils.toString(Settings.spectatorSpawn.getLocation()));
+            }
+
+            // save lobbyspawn
+            if (Settings.lobbySpawn != null) {
+                config.set("game.lobbySpawn", LocationUtils.toString(Settings.lobbySpawn.getLocation()));
+            }
+
             config.save(Settings.playerSpawnFile);
         } catch (Exception e) {
             e.printStackTrace();
@@ -171,6 +184,14 @@ public class Settings {
      */
     public static HashSet<PlayerSpawn> getPlayerSpawns() {
         return playerSpawns;
+    }
+
+    public static PlayerSpawn getSpectatorSpawn() {
+        return spectatorSpawn;
+    }
+
+    public static PlayerSpawn getLobbySpawn() {
+        return lobbySpawn;
     }
 
     public static PlayerSpawn getPlayerSpawnByID(int ID) {

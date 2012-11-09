@@ -51,7 +51,7 @@ public class Core extends JavaPlugin {
         // print info
         Chat.printMessage(NAME + " version " + VERSION + " enabled!");
     }
-    
+
     @Override
     public void onDisable() {
         // disable managers

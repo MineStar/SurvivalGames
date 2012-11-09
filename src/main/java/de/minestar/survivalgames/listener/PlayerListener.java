@@ -1,5 +1,7 @@
 package de.minestar.survivalgames.listener;
 
+import java.util.Iterator;
+
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
@@ -15,7 +17,9 @@ import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.PlayerDeathEvent;
+import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
+import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
@@ -38,7 +42,30 @@ public class PlayerListener implements Listener {
     }
 
     @EventHandler
+    public void onPlayerChat(AsyncPlayerChatEvent event) {
+        if (!this.gameManager.isInGame()) {
+            return;
+        }
+
+        String playerName = event.getPlayer().getName();
+        // players can not read what spectators are writing
+        if (this.playerManager.isSpectator(playerName)) {
+            Iterator<Player> iteratorPlayer = event.getRecipients().iterator();
+            while (iteratorPlayer.hasNext()) {
+                Player otherPlayer = iteratorPlayer.next();
+                if (this.playerManager.isPlayer(otherPlayer.getName())) {
+                    iteratorPlayer.remove();
+                }
+            }
+        }
+    }
+
+    @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
+        if (!this.gameManager.isInGame()) {
+            return;
+        }
+
         // only right clicks on a block
         if (!event.getAction().equals(Action.RIGHT_CLICK_BLOCK) && !event.getAction().equals(Action.LEFT_CLICK_BLOCK)) {
             return;
@@ -106,10 +133,17 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerDamage(EntityDamageByEntityEvent event) {
+        // no damage, if there is no game
+        if (!this.gameManager.isInGame()) {
+            event.setDamage(0);
+            event.setCancelled(true);
+            return;
+        }
+
         // block damage by spectators
         if (event.getDamager().getType().equals(EntityType.PLAYER)) {
             Player attacker = (Player) event.getDamager();
-            if (this.playerManager.isSpecator(attacker.getName())) {
+            if (this.playerManager.isSpectator(attacker.getName())) {
                 event.setDamage(0);
                 event.setCancelled(true);
                 return;
@@ -119,7 +153,7 @@ public class PlayerListener implements Listener {
         // block damage for spectators
         if (event.getEntity().getType().equals(EntityType.PLAYER)) {
             Player defender = (Player) event.getEntity();
-            if (this.playerManager.isSpecator(defender.getName())) {
+            if (this.playerManager.isSpectator(defender.getName())) {
                 event.setDamage(0);
                 event.setCancelled(true);
                 return;
@@ -152,6 +186,10 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerDeath(PlayerDeathEvent event) {
+        if (!this.gameManager.isInGame()) {
+            return;
+        }
+
         String playerName = event.getEntity().getPlayer().getName();
         if (!this.playerManager.isPlayer(playerName)) {
             return;
@@ -181,24 +219,37 @@ public class PlayerListener implements Listener {
 
     @EventHandler
     public void onPlayerRespawn(PlayerRespawnEvent event) {
+        if (!this.gameManager.isInGame()) {
+            event.setRespawnLocation(Settings.getLobbySpawn().getLocation());
+            return;
+        }
+
         String playerName = event.getPlayer().getName();
-        if (this.playerManager.isSpecator(playerName)) {
+        if (this.playerManager.isSpectator(playerName)) {
             this.playerManager.hidePlayer(playerName);
+            event.setRespawnLocation(Settings.getSpectatorSpawn().getLocation());
         }
     }
 
     public void onPlayerTeleport(PlayerTeleportEvent event) {
+        if (!this.gameManager.isInGame()) {
+            event.setTo(Settings.getLobbySpawn().getLocation());
+            return;
+        }
+
         String playerName = event.getPlayer().getName();
-        if (this.playerManager.isSpecator(playerName)) {
+        if (this.playerManager.isSpectator(playerName)) {
             this.playerManager.hidePlayer(playerName);
         }
     }
 
     @EventHandler
-    public void onPlayerJoin(PlayerQuitEvent event) {
+    public void onPlayerJoin(PlayerJoinEvent event) {
         String playerName = event.getPlayer().getName();
         if (this.gameManager.isInGame()) {
             this.playerManager.makeSpectator(playerName);
+        } else {
+            this.playerManager.showPlayer(playerName);
         }
     }
 
@@ -214,9 +265,8 @@ public class PlayerListener implements Listener {
 
     private void updatePlayerOnDisconnect(Player player) {
         String playerName = player.getName();
-        if (this.gameManager.isInGame() && this.playerManager.isPlayer(playerName)) {
-            this.playerManager.removeFromPlayerList(playerName);
-        }
+        this.playerManager.removeFromPlayerList(playerName);
+        this.playerManager.removeFromSpectatorList(playerName);
     }
 
     private void playThunderSound(Entity entity) {

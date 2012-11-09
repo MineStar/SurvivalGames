@@ -1,9 +1,15 @@
 package de.minestar.survivalgames.manager;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.Random;
 
 import org.bukkit.Bukkit;
 import org.bukkit.entity.Player;
+
+import de.minestar.survivalgames.Core;
+import de.minestar.survivalgames.data.PlayerSpawn;
+import de.minestar.survivalgames.data.Settings;
 
 public class PlayerManager {
 
@@ -14,11 +20,20 @@ public class PlayerManager {
         this.players = new HashSet<String>();
     }
 
-    public void startGame() {
+    public void preGame() {
         Player[] playerList = Bukkit.getOnlinePlayers();
         for (Player player : playerList) {
             players.add(player.getName());
         }
+        Core.playerManager.teleportAllToGameSpawn();
+    }
+
+    public void startGame() {
+
+    }
+
+    public void startDeathmatch() {
+        Core.playerManager.teleportAllToGameSpawn();
     }
 
     public void endGame() {
@@ -27,6 +42,9 @@ public class PlayerManager {
 
         // clear lists
         this.clearLists();
+
+        // teleport to lobby spawn
+        this.teleportAllToLobbySpawn();
     }
 
     public void onDisable() {
@@ -39,8 +57,12 @@ public class PlayerManager {
         this.spectators.add(playerName);
     }
 
-    public boolean isSpecator(String playerName) {
+    public boolean isSpectator(String playerName) {
         return this.spectators.contains(playerName);
+    }
+
+    public void removeFromSpectatorList(String playerName) {
+        this.spectators.remove(playerName);
     }
 
     public void makePlayer(String playerName) {
@@ -122,11 +144,38 @@ public class PlayerManager {
         return "UNKNOWN";
     }
 
-    public void teleportAllToSpawn() {
-        // hide player to everyone, except himself
+    public void teleportAllToLobbySpawn() {
+        // get the actual playerlist
         Player[] playerList = Bukkit.getOnlinePlayers();
+
+        // teleport every player to the spawn
         for (Player player : playerList) {
-            // TODO: IMPLEMENT TELEPORT
+            player.teleport(Settings.getLobbySpawn().getLocation());
+        }
+    }
+
+    public void teleportAllToGameSpawn() {
+        // get the actual playerlist
+        Player[] playerList = Bukkit.getOnlinePlayers();
+
+        // write spawns into arraylist for randomized use
+        ArrayList<PlayerSpawn> unusedSpawns = new ArrayList<PlayerSpawn>();
+        for (PlayerSpawn spawn : Settings.getPlayerSpawns()) {
+            unusedSpawns.add(spawn);
+        }
+
+        // teleport every player to the spawn
+        Random random = new Random();
+        for (Player player : playerList) {
+            if (this.isPlayer(player.getName())) {
+                // player = teleport to random spawnpoint
+                int index = random.nextInt() * unusedSpawns.size();
+                player.teleport(unusedSpawns.get(index).getLocation());
+                unusedSpawns.remove(index);
+            } else {
+                // spectator = teleport to spectatorspawn
+                player.teleport(Settings.getSpectatorSpawn().getLocation());
+            }
         }
     }
 
