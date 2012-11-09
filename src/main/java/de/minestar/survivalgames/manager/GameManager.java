@@ -21,12 +21,11 @@ public class GameManager {
 
     }
 
-    public void onDisable() {
-
-    }
-
     public void preGame() {
         this.gameState = GameState.PREGAME;
+        Settings.getSpectatorSpawn().getLocation().getWorld().setTime(2000);
+        Settings.getSpectatorSpawn().getLocation().getWorld().setThundering(false);
+        Settings.getSpectatorSpawn().getLocation().getWorld().setStorm(false);
         Core.playerManager.preGame();
         Chat.broadcast(ChatColor.GRAY, "The games will start in " + Settings.getPreGameTime() + " minutes! Prepare!");
         timer.schedule(new StartGameThread(), Settings.getPreGameTime() * 60 * 1000);

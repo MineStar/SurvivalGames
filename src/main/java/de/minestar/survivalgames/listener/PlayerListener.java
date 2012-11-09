@@ -1,5 +1,7 @@
 package de.minestar.survivalgames.listener;
 
+import java.util.Arrays;
+import java.util.HashSet;
 import java.util.Iterator;
 
 import org.bukkit.ChatColor;
@@ -35,12 +37,52 @@ import de.minestar.survivalgames.utils.LocationUtils;
 
 public class PlayerListener implements Listener {
 
+    private static HashSet<Integer> usableBlocks = new HashSet<Integer>(Arrays.asList(Material.CAKE_BLOCK.getId()));
+
     private GameManager gameManager;
     private PlayerManager playerManager;
 
     public PlayerListener() {
         this.gameManager = Core.gameManager;
         this.playerManager = Core.playerManager;
+    }
+
+    public void onEnable() {
+        if (Settings.isBlockDispenserInteraction()) {
+            PlayerListener.usableBlocks.add(Material.DISPENSER.getId());
+            return;
+        }
+
+        if (Settings.isBlockDoorInteraction()) {
+            PlayerListener.usableBlocks.add(Material.WOODEN_DOOR.getId());
+            return;
+        }
+
+        if (Settings.isBlockStoneButtonInteraction()) {
+            PlayerListener.usableBlocks.add(Material.STONE_BUTTON.getId());
+            return;
+        }
+
+        if (Settings.isBlockWoodButtonInteraction()) {
+            PlayerListener.usableBlocks.add(Material.WOOD_BUTTON.getId());
+            return;
+        }
+
+        if (Settings.isBlockLeverInteraction()) {
+            PlayerListener.usableBlocks.add(Material.LEVER.getId());
+            return;
+        }
+
+        if (Settings.isBlockFurnaceInteraction()) {
+            PlayerListener.usableBlocks.add(Material.FURNACE.getId());
+            PlayerListener.usableBlocks.add(Material.BURNING_FURNACE.getId());
+            return;
+        }
+
+        if (Settings.isBlockWorkbenchInteraction()) {
+            PlayerListener.usableBlocks.add(Material.WORKBENCH.getId());
+            return;
+        }
     }
 
     @EventHandler
@@ -53,7 +95,6 @@ public class PlayerListener implements Listener {
         // don't move
         if (!LocationUtils.equals(event.getFrom(), event.getTo())) {
             event.setTo(event.getFrom());
-            event.setCancelled(true);
         }
     }
 
@@ -90,56 +131,8 @@ public class PlayerListener implements Listener {
         // get the block
         Block block = event.getClickedBlock();
 
-        // disallow interaction with dispensers
-        if (Settings.isBlockDispenserInteraction() && block.getType().equals(Material.DISPENSER)) {
-            event.setUseInteractedBlock(Result.DENY);
-            event.setUseItemInHand(Result.DENY);
-            event.setCancelled(true);
-            return;
-        }
-
-        // disallow interaction with doors
-        if (Settings.isBlockDoorInteraction() && block.getType().equals(Material.WOODEN_DOOR)) {
-            event.setUseInteractedBlock(Result.DENY);
-            event.setUseItemInHand(Result.DENY);
-            event.setCancelled(true);
-            return;
-        }
-
-        // disallow interaction with stonebuttons
-        if (Settings.isBlockStoneButtonInteraction() && block.getType().equals(Material.STONE_BUTTON)) {
-            event.setUseInteractedBlock(Result.DENY);
-            event.setUseItemInHand(Result.DENY);
-            event.setCancelled(true);
-            return;
-        }
-
-        // disallow interaction with woodbuttons
-        if (Settings.isBlockWoodButtonInteraction() && block.getType().equals(Material.WOOD_BUTTON)) {
-            event.setUseInteractedBlock(Result.DENY);
-            event.setUseItemInHand(Result.DENY);
-            event.setCancelled(true);
-            return;
-        }
-
-        // disallow interaction with levers
-        if (Settings.isBlockLeverInteraction() && block.getType().equals(Material.LEVER)) {
-            event.setUseInteractedBlock(Result.DENY);
-            event.setUseItemInHand(Result.DENY);
-            event.setCancelled(true);
-            return;
-        }
-
-        // disallow interaction with furnaces
-        if (Settings.isBlockFurnaceInteraction() && (block.getType().equals(Material.FURNACE) || block.getType().equals(Material.BURNING_FURNACE))) {
-            event.setUseInteractedBlock(Result.DENY);
-            event.setUseItemInHand(Result.DENY);
-            event.setCancelled(true);
-            return;
-        }
-
-        // disallow interaction with workbenches
-        if (Settings.isBlockWorkbenchInteraction() && block.getType().equals(Material.WORKBENCH)) {
+        // check interaction
+        if (!PlayerListener.usableBlocks.contains(block.getTypeId())) {
             event.setUseInteractedBlock(Result.DENY);
             event.setUseItemInHand(Result.DENY);
             event.setCancelled(true);

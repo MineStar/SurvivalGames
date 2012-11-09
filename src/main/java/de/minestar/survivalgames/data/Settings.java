@@ -27,11 +27,11 @@ public class Settings {
     private static PlayerSpawn spectatorSpawn = null, lobbySpawn = null;
     private static File dataFolder, configFile, playerSpawnFile;
 
-    private static long preGameTime = 1;
-    private static long prePVPTime = 2;
-    private static long preDeathmatchTime = 28;
+    private static int preGameTime = 1;
+    private static int prePVPTime = 2;
+    private static int preDeathmatchTime = 28;
 
-    static {
+    public static void init() {
         Settings.dataFolder = Core.INSTANCE.getDataFolder();
         Settings.configFile = new File(dataFolder, "config.yml");
         Settings.playerSpawnFile = new File(Settings.dataFolder, "playerSpawns.yml");
@@ -60,6 +60,25 @@ public class Settings {
                     IDCount++;
                 }
             }
+
+            // load spectatorspawn
+            String text = config.getString("game.spectatorSpawn", "NULL");
+            if (!text.equalsIgnoreCase("NULL")) {
+                Location location = LocationUtils.fromString(text);
+                if (location != null) {
+                    Settings.spectatorSpawn = new PlayerSpawn(-1, location);
+                }
+            }
+
+            // load lobbyspawn
+            text = config.getString("game.lobbySpawn", "NULL");
+            if (!text.equalsIgnoreCase("NULL")) {
+                Location location = LocationUtils.fromString(text);
+                if (location != null) {
+                    Settings.lobbySpawn = new PlayerSpawn(-1, location);
+                }
+            }
+
             Chat.printMessage(ChatColor.GREEN, "Loaded spawns: " + playerSpawns.size());
         } catch (Exception e) {
             e.printStackTrace();
@@ -110,6 +129,11 @@ public class Settings {
             Settings.blockLeverInteraction = config.getBoolean("block.interaction.lever", false);
             Settings.blockFurnaceInteraction = config.getBoolean("block.interaction.furnace", false);
             Settings.blockWorkbenchInteraction = config.getBoolean("block.interaction.workbench", false);
+
+            Settings.preGameTime = config.getInt("timings.pre.game", Settings.preGameTime);
+            Settings.prePVPTime = config.getInt("timings.pre.pvp", Settings.prePVPTime);
+            Settings.preDeathmatchTime = config.getInt("timings.pre.deathmatch", Settings.preDeathmatchTime);
+
         } catch (Exception e) {
             e.printStackTrace();
         }
@@ -210,6 +234,110 @@ public class Settings {
     }
 
     /**
+     * @param blockDispenserInteraction
+     *            the blockDispenserInteraction to set
+     */
+    public static void setBlockDispenserInteraction(boolean blockDispenserInteraction) {
+        Settings.blockDispenserInteraction = blockDispenserInteraction;
+    }
+
+    /**
+     * @param blockDoorInteraction
+     *            the blockDoorInteraction to set
+     */
+    public static void setBlockDoorInteraction(boolean blockDoorInteraction) {
+        Settings.blockDoorInteraction = blockDoorInteraction;
+    }
+
+    /**
+     * @param blockStoneButtonInteraction
+     *            the blockStoneButtonInteraction to set
+     */
+    public static void setBlockStoneButtonInteraction(boolean blockStoneButtonInteraction) {
+        Settings.blockStoneButtonInteraction = blockStoneButtonInteraction;
+    }
+
+    /**
+     * @param blockWoodButtonInteraction
+     *            the blockWoodButtonInteraction to set
+     */
+    public static void setBlockWoodButtonInteraction(boolean blockWoodButtonInteraction) {
+        Settings.blockWoodButtonInteraction = blockWoodButtonInteraction;
+    }
+
+    /**
+     * @param blockLeverInteraction
+     *            the blockLeverInteraction to set
+     */
+    public static void setBlockLeverInteraction(boolean blockLeverInteraction) {
+        Settings.blockLeverInteraction = blockLeverInteraction;
+    }
+
+    /**
+     * @param blockFurnaceInteraction
+     *            the blockFurnaceInteraction to set
+     */
+    public static void setBlockFurnaceInteraction(boolean blockFurnaceInteraction) {
+        Settings.blockFurnaceInteraction = blockFurnaceInteraction;
+    }
+
+    /**
+     * @param blockWorkbenchInteraction
+     *            the blockWorkbenchInteraction to set
+     */
+    public static void setBlockWorkbenchInteraction(boolean blockWorkbenchInteraction) {
+        Settings.blockWorkbenchInteraction = blockWorkbenchInteraction;
+    }
+
+    /**
+     * @param playerSpawns
+     *            the playerSpawns to set
+     */
+    public static void setPlayerSpawns(HashSet<PlayerSpawn> playerSpawns) {
+        Settings.playerSpawns = playerSpawns;
+    }
+
+    /**
+     * @param spectatorSpawn
+     *            the spectatorSpawn to set
+     */
+    public static void setSpectatorSpawn(PlayerSpawn spectatorSpawn) {
+        Settings.spectatorSpawn = spectatorSpawn;
+    }
+
+    /**
+     * @param lobbySpawn
+     *            the lobbySpawn to set
+     */
+    public static void setLobbySpawn(PlayerSpawn lobbySpawn) {
+        Settings.lobbySpawn = lobbySpawn;
+    }
+
+    /**
+     * @param preGameTime
+     *            the preGameTime to set
+     */
+    public static void setPreGameTime(int preGameTime) {
+        Settings.preGameTime = preGameTime;
+    }
+
+    /**
+     * @param prePVPTime
+     *            the prePVPTime to set
+     */
+    public static void setPrePVPTime(int prePVPTime) {
+        Settings.prePVPTime = prePVPTime;
+    }
+
+    /**
+     * @param preDeathmatchTime
+     *            the preDeathmatchTime to set
+     */
+    public static void setPreDeathmatchTime(int preDeathmatchTime) {
+        Settings.preDeathmatchTime = preDeathmatchTime;
+    }
+
+    /**
      * @return the preDeathmatchTime
      */
     public static long getPreDeathmatchTime() {
@@ -239,6 +367,7 @@ public class Settings {
         }
         Settings.playerSpawns.add(spawn);
         Settings.savePlayerSpawns();
+        Settings.loadPlayerSpawns();
         return true;
     }
 

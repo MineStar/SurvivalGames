@@ -24,7 +24,7 @@ public class LootManager {
     }
 
     private void loadChests() {
-        File[] files = new File(Core.INSTANCE.getDataFolder() + System.getProperty("path.separator") + "loot").listFiles();
+        File[] files = new File(Core.INSTANCE.getDataFolder() + System.getProperty("file.separator") + "loot").listFiles();
         int itemCount = 0;
         for (File f : files) {
             try {
@@ -65,10 +65,6 @@ public class LootManager {
             }
         }
         Chat.printMessage(ChatColor.GREEN, "Loaded " + this.chestList.size() + " chests with " + itemCount + " items!");
-    }
-
-    public void onDisable() {
-
     }
 
     public void startGame() {

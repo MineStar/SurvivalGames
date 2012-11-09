@@ -24,6 +24,7 @@ public class PlayerManager {
         Player[] playerList = Bukkit.getOnlinePlayers();
         for (Player player : playerList) {
             players.add(player.getName());
+            spectators.remove(player.getName());
         }
         Core.playerManager.teleportAllToGameSpawn();
     }
@@ -76,7 +77,7 @@ public class PlayerManager {
     }
 
     public boolean isPlayer(String playerName) {
-        return this.spectators.contains(playerName);
+        return this.players.contains(playerName);
     }
 
     public void showPlayer(String playerName) {
@@ -168,12 +169,14 @@ public class PlayerManager {
         Random random = new Random();
         for (Player player : playerList) {
             if (this.isPlayer(player.getName())) {
+                System.out.println("is player");
                 // player = teleport to random spawnpoint
                 int index = (int) (random.nextDouble() * unusedSpawns.size());
                 player.teleport(unusedSpawns.get(index).getLocation());
                 unusedSpawns.remove(index);
             } else {
                 // spectator = teleport to spectatorspawn
+                System.out.println("is spectator");
                 player.teleport(Settings.getSpectatorSpawn().getLocation());
             }
         }

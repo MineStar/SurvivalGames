@@ -29,6 +29,7 @@ public class ItemListener implements Listener {
             if (type.equals(Material.VINE) || type.equals(Material.BROWN_MUSHROOM) || type.equals(Material.RED_MUSHROOM) || type.equals(Material.MELON) || type.equals(Material.WHEAT)) {
                 return;
             }
+            event.setCancelled(true);
         }
     }
 

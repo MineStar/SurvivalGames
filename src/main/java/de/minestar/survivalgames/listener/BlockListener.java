@@ -1,5 +1,8 @@
 package de.minestar.survivalgames.listener;
 
+import java.util.Arrays;
+import java.util.HashSet;
+
 import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.event.EventHandler;
@@ -7,11 +10,16 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.event.block.BlockPlaceEvent;
 import org.bukkit.event.entity.CreatureSpawnEvent;
+import org.bukkit.event.player.PlayerBucketEmptyEvent;
+import org.bukkit.event.player.PlayerBucketFillEvent;
 
 import de.minestar.survivalgames.Core;
 import de.minestar.survivalgames.manager.GameManager;
 
 public class BlockListener implements Listener {
+
+    private static HashSet<Integer> breakableBlocks = new HashSet<Integer>(Arrays.asList(Material.VINE.getId(), Material.MELON.getId(), Material.WHEAT.getId(), Material.BROWN_MUSHROOM.getId(), Material.RED_MUSHROOM.getId()));
+    private static HashSet<Integer> placeableBlocks = new HashSet<Integer>(Arrays.asList(Material.VINE.getId(), Material.CAKE_BLOCK.getId()));
 
     private GameManager gameManager;
 
@@ -25,6 +33,28 @@ public class BlockListener implements Listener {
     }
 
     @EventHandler
+    public void onBucketEmpty(PlayerBucketEmptyEvent event) {
+        // game must be running
+        if (!this.gameManager.isInGame()) {
+            return;
+        }
+
+        // cancel event
+        event.setCancelled(true);
+    }
+
+    @EventHandler
+    public void onBucketFill(PlayerBucketFillEvent event) {
+        // game must be running
+        if (!this.gameManager.isInGame()) {
+            return;
+        }
+
+        // cancel event
+        event.setCancelled(true);
+    }
+
+    @EventHandler
     public void onBlockPlace(BlockPlaceEvent event) {
         // game must be running
         if (!this.gameManager.isInGame()) {
@@ -33,7 +63,7 @@ public class BlockListener implements Listener {
 
         // only vines are allowed
         Block block = event.getBlockPlaced();
-        if (!block.getType().equals(Material.VINE)) {
+        if (!placeableBlocks.contains(block.getTypeId())) {
             event.setBuild(false);
             event.setCancelled(true);
             return;
@@ -49,7 +79,7 @@ public class BlockListener implements Listener {
 
         // only vines, mushrooms, wheat and melons are allowed
         Block block = event.getBlock();
-        if (block.getType().equals(Material.VINE) || block.getType().equals(Material.MELON) || block.getType().equals(Material.WHEAT) || block.getType().equals(Material.BROWN_MUSHROOM) || block.getType().equals(Material.RED_MUSHROOM)) {
+        if (BlockListener.breakableBlocks.contains(block.getTypeId())) {
             return;
         }
 

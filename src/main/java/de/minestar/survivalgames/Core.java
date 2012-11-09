@@ -21,8 +21,18 @@ package de.minestar.survivalgames;
 import java.io.File;
 
 import org.bukkit.Bukkit;
+import org.bukkit.ChatColor;
+import org.bukkit.command.Command;
+import org.bukkit.command.CommandSender;
+import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import de.minestar.survivalgames.commands.SetLobbySpawn_Command;
+import de.minestar.survivalgames.commands.SetPlayerSpawn_Command;
+import de.minestar.survivalgames.commands.SetSpectatorSpawn_Command;
+import de.minestar.survivalgames.commands.StartGame_Command;
+import de.minestar.survivalgames.commands.StopGame_Command;
+import de.minestar.survivalgames.data.Settings;
 import de.minestar.survivalgames.listener.BlockListener;
 import de.minestar.survivalgames.listener.ItemListener;
 import de.minestar.survivalgames.listener.PlayerListener;
@@ -44,9 +54,14 @@ public class Core extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        Core.INSTANCE = this;
+
         // create dirs
         Core.INSTANCE.getDataFolder().mkdir();
-        new File(Core.INSTANCE.getDataFolder() + System.getProperty("path.separator") + "loot").mkdir();
+        new File(Core.INSTANCE.getDataFolder() + System.getProperty("file.separator") + "loot").mkdir();
+
+        // init settings
+        Settings.init();
 
         // create managers
         Core.gameManager = new GameManager();
@@ -71,11 +86,45 @@ public class Core extends JavaPlugin {
     public void onDisable() {
         // disable managers
         Core.playerManager.onDisable();
-        Core.lootManager.onDisable();
-        Core.gameManager.onDisable();
 
         // print info
         Chat.printMessage(NAME + " version " + VERSION + " disabled!");
+    }
+
+    @Override
+    public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
+        if (!sender.isOp()) {
+            sender.sendMessage(ChatColor.RED + "You are not allowed to use this command!");
+            return true;
+        }
+
+        if (sender instanceof Player) {
+            if (args[0].equalsIgnoreCase("start")) {
+                new StartGame_Command().execute((Player) sender);
+                return true;
+            }
+            if (args[0].equalsIgnoreCase("stop")) {
+                new StopGame_Command().execute((Player) sender);
+                return true;
+            }
+            if (args[0].equalsIgnoreCase("setLobby")) {
+                new SetLobbySpawn_Command().execute((Player) sender, args);
+                return true;
+            }
+            if (args[0].equalsIgnoreCase("setSpectator")) {
+                new SetSpectatorSpawn_Command().execute((Player) sender, args);
+                return true;
+            }
+            if (args[0].equalsIgnoreCase("addPlayer")) {
+                new SetPlayerSpawn_Command().execute((Player) sender, args);
+                return true;
+            }
+        } else {
+            sender.sendMessage(ChatColor.RED + "Only ingame!");
+            return true;
+        }
+
+        return true;
     }
 
 }

@@ -72,7 +72,7 @@ public class LootChest {
     }
 
     public void saveChest() {
-        File file = new File(Core.INSTANCE.getDataFolder() + System.getProperty("path.separator") + "loot", LocationUtils.toString(this.location) + ".txt");
+        File file = new File(Core.INSTANCE.getDataFolder() + System.getProperty("file.separator") + "loot", LocationUtils.toString(this.location) + ".txt");
         file.mkdir();
         if (file.exists()) {
             file.delete();
