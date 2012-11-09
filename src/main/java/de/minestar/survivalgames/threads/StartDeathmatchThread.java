@@ -1,16 +1,16 @@
 package de.minestar.survivalgames.threads;
 
-import org.bukkit.ChatColor;
+import java.util.TimerTask;
+
+import org.bukkit.Bukkit;
 
 import de.minestar.survivalgames.Core;
-import de.minestar.survivalgames.utils.Chat;
 
-public class StartDeathmatchThread implements Runnable {
+public class StartDeathmatchThread extends TimerTask {
 
     @Override
     public void run() {
-        Core.gameManager.startDeathmatch();
-        Chat.broadcast(ChatColor.RED, "Time for deathmatch!");
+        Bukkit.getScheduler().scheduleSyncDelayedTask(Core.INSTANCE, new StartDeathmatchTask());
     }
 
 }

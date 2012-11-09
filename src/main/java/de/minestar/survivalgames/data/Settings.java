@@ -27,6 +27,10 @@ public class Settings {
     private static PlayerSpawn spectatorSpawn = null, lobbySpawn = null;
     private static File dataFolder, configFile, playerSpawnFile;
 
+    private static long preGameTime = 1;
+    private static long prePVPTime = 2;
+    private static long preDeathmatchTime = 28;
+
     static {
         Settings.dataFolder = Core.INSTANCE.getDataFolder();
         Settings.configFile = new File(dataFolder, "config.yml");
@@ -124,6 +128,11 @@ public class Settings {
             config.set("block.interaction.lever", Settings.blockLeverInteraction);
             config.set("block.interaction.furnace", Settings.blockFurnaceInteraction);
             config.set("block.interaction.workbench", Settings.blockWorkbenchInteraction);
+
+            config.set("timings.pre.game", Settings.preGameTime);
+            config.set("timings.pre.pvp", Settings.prePVPTime);
+            config.set("timings.pre.deathmatch", Settings.preDeathmatchTime);
+
             config.save(Settings.configFile);
         } catch (Exception e) {
             e.printStackTrace();
@@ -184,6 +193,27 @@ public class Settings {
      */
     public static HashSet<PlayerSpawn> getPlayerSpawns() {
         return playerSpawns;
+    }
+
+    /**
+     * @return the preGameTime
+     */
+    public static long getPreGameTime() {
+        return preGameTime;
+    }
+
+    /**
+     * @return the prePVPTime
+     */
+    public static long getPrePVPTime() {
+        return prePVPTime;
+    }
+
+    /**
+     * @return the preDeathmatchTime
+     */
+    public static long getPreDeathmatchTime() {
+        return preDeathmatchTime;
     }
 
     public static PlayerSpawn getSpectatorSpawn() {

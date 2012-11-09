@@ -29,7 +29,7 @@ public class PlayerManager {
     }
 
     public void startGame() {
-
+        // nothing to do here
     }
 
     public void startDeathmatch() {

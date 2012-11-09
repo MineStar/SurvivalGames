@@ -21,6 +21,7 @@ import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
+import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
@@ -30,6 +31,7 @@ import de.minestar.survivalgames.data.Settings;
 import de.minestar.survivalgames.manager.GameManager;
 import de.minestar.survivalgames.manager.PlayerManager;
 import de.minestar.survivalgames.utils.Chat;
+import de.minestar.survivalgames.utils.LocationUtils;
 
 public class PlayerListener implements Listener {
 
@@ -39,6 +41,20 @@ public class PlayerListener implements Listener {
     public PlayerListener() {
         this.gameManager = Core.gameManager;
         this.playerManager = Core.playerManager;
+    }
+
+    @EventHandler
+    public void onPlayerMove(PlayerMoveEvent event) {
+        // only affect this, if the game is not in pregame
+        if (!this.gameManager.isInPreGame()) {
+            return;
+        }
+
+        // don't move
+        if (!LocationUtils.equals(event.getFrom(), event.getTo())) {
+            event.setTo(event.getFrom());
+            event.setCancelled(true);
+        }
     }
 
     @EventHandler
@@ -134,7 +150,7 @@ public class PlayerListener implements Listener {
     @EventHandler
     public void onPlayerDamage(EntityDamageByEntityEvent event) {
         // no damage, if there is no game
-        if (!this.gameManager.isInGame()) {
+        if (!this.gameManager.isInGame() || this.gameManager.isInPreGame() || !this.gameManager.isPVPEnabled()) {
             event.setDamage(0);
             event.setCancelled(true);
             return;
@@ -160,26 +176,15 @@ public class PlayerListener implements Listener {
             }
         }
 
-        // player attacks someone/something (entity, or other player)
-        if (event.getDamager().getType().equals(EntityType.PLAYER)) {
-            if (!this.gameManager.isPVPEnabled()) {
-                event.setDamage(0);
-                event.setCancelled(true);
-                return;
-            }
-        }
-
         if (event.getEntity().getType().equals(EntityType.PLAYER)) {
             // get the DamageCause
             DamageCause cause = event.getCause();
             // only check, if PVP is not enabled
-            if (!this.gameManager.isPVPEnabled()) {
-                // player got damage by another player, or an entity
-                if (cause.equals(DamageCause.ENTITY_ATTACK) || cause.equals(DamageCause.PROJECTILE) || cause.equals(DamageCause.ENTITY_EXPLOSION)) {
-                    event.setDamage(0);
-                    event.setCancelled(true);
-                    return;
-                }
+            // player got damage by another player, or an entity
+            if (cause.equals(DamageCause.ENTITY_ATTACK) || cause.equals(DamageCause.PROJECTILE) || cause.equals(DamageCause.ENTITY_EXPLOSION)) {
+                event.setDamage(0);
+                event.setCancelled(true);
+                return;
             }
         }
     }

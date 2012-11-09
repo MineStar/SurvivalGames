@@ -1,16 +1,16 @@
 package de.minestar.survivalgames.threads;
 
-import org.bukkit.ChatColor;
+import java.util.TimerTask;
+
+import org.bukkit.Bukkit;
 
 import de.minestar.survivalgames.Core;
-import de.minestar.survivalgames.utils.Chat;
 
-public class StartPVPThread implements Runnable {
+public class StartPVPThread extends TimerTask {
 
     @Override
     public void run() {
-        Core.gameManager.enablePVP();
-        Chat.broadcast(ChatColor.RED, "PVP is now enabled!");
+        Bukkit.getScheduler().scheduleSyncDelayedTask(Core.INSTANCE, new StartPVPTask());
     }
 
 }

@@ -1,16 +1,15 @@
 package de.minestar.survivalgames.threads;
 
-import org.bukkit.ChatColor;
+import java.util.TimerTask;
+
+import org.bukkit.Bukkit;
 
 import de.minestar.survivalgames.Core;
-import de.minestar.survivalgames.utils.Chat;
 
-public class StartGameThread implements Runnable {
+public class StartGameThread extends TimerTask {
 
     @Override
     public void run() {
-        Core.gameManager.startGame();
-        Chat.broadcast(ChatColor.RED, "The games have started!");
+        Bukkit.getScheduler().scheduleSyncDelayedTask(Core.INSTANCE, new StartGameTask());
     }
-
 }
