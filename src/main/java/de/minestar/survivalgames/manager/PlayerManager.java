@@ -169,7 +169,7 @@ public class PlayerManager {
         for (Player player : playerList) {
             if (this.isPlayer(player.getName())) {
                 // player = teleport to random spawnpoint
-                int index = random.nextInt() * unusedSpawns.size();
+                int index = (int) (random.nextDouble() * unusedSpawns.size());
                 player.teleport(unusedSpawns.get(index).getLocation());
                 unusedSpawns.remove(index);
             } else {
