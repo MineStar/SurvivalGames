@@ -1,0 +1,7 @@
+name: SurvivalGames
+main: de.minestar.survivalgames.Core
+version: ${pom.version}
+commands:
+    game:
+        description: SurvivalGames-Related commands
+        usage: /game <cmd 1> ... <cmd n>
