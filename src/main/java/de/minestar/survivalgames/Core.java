@@ -18,6 +18,8 @@
 
 package de.minestar.survivalgames;
 
+import java.io.File;
+
 import org.bukkit.plugin.java.JavaPlugin;
 
 import de.minestar.survivalgames.manager.GameManager;
@@ -38,6 +40,10 @@ public class Core extends JavaPlugin {
 
     @Override
     public void onEnable() {
+        // create dirs
+        Core.INSTANCE.getDataFolder().mkdir();
+        new File(Core.INSTANCE.getDataFolder() + System.getProperty("path.separator") + "loot").mkdir();
+
         // create managers
         Core.gameManager = new GameManager();
         Core.lootManager = new LootManager();

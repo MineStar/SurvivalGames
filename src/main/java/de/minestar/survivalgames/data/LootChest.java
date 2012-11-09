@@ -19,9 +19,9 @@ public class LootChest {
     private ArrayList<Loot> lootList = new ArrayList<Loot>();
     private Random random = new Random();
 
-    public LootChest(Location location, ArrayList<Loot> loot) {
+    public LootChest(Location location, ArrayList<Loot> lootList) {
         this.location = location;
-        this.lootList = loot;
+        this.lootList = lootList;
     }
 
     public Chest getChest() {
