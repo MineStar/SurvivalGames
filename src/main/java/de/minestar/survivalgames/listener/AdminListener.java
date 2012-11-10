@@ -91,5 +91,4 @@ public class AdminListener implements Listener {
             event.setCancelled(true);
         }
     }
-
 }

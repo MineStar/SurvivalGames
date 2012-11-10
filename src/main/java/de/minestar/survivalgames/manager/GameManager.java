@@ -10,6 +10,9 @@ import de.minestar.survivalgames.data.Settings;
 import de.minestar.survivalgames.threads.StartDeathmatchThread;
 import de.minestar.survivalgames.threads.StartGameThread;
 import de.minestar.survivalgames.threads.StartPVPThread;
+import de.minestar.survivalgames.threads.TimerDeathmatchStartThread;
+import de.minestar.survivalgames.threads.TimerGameStartThread;
+import de.minestar.survivalgames.threads.TimerPVPStartThread;
 import de.minestar.survivalgames.utils.Chat;
 
 public class GameManager {
@@ -21,6 +24,10 @@ public class GameManager {
 
     }
 
+    public void onDisable() {
+        timer.cancel();
+    }
+
     public void preGame() {
         this.gameState = GameState.PREGAME;
         Settings.getSpectatorSpawn().getLocation().getWorld().setTime(2000);
@@ -29,6 +36,8 @@ public class GameManager {
         Core.playerManager.preGame();
         Chat.broadcast(ChatColor.GRAY, "The games will start in " + Settings.getPreGameTime() + " minutes! Prepare!");
         timer.schedule(new StartGameThread(), Settings.getPreGameTime() * 60 * 1000);
+        timer.scheduleAtFixedRate(new TimerGameStartThread(System.currentTimeMillis() + (Settings.getPreGameTime() * 60 * 1000)), 1000, 1000);
+
     }
 
     public void startGame() {
@@ -37,12 +46,14 @@ public class GameManager {
         Core.playerManager.startGame();
         Chat.broadcast(ChatColor.GRAY, "PVP will be enabled in " + Settings.getPrePVPTime() + " minutes!");
         timer.schedule(new StartPVPThread(), Settings.getPrePVPTime() * 60 * 1000);
+        timer.scheduleAtFixedRate(new TimerPVPStartThread(System.currentTimeMillis() + (Settings.getPrePVPTime() * 60 * 1000)), 1000, 1000);
     }
 
     public void enablePVP() {
         this.gameState = GameState.SURVIVAL;
         Chat.broadcast(ChatColor.GRAY, "Deathmatch will start in " + Settings.getPreDeathmatchTime() + " minutes!");
         timer.schedule(new StartDeathmatchThread(), Settings.getPreDeathmatchTime() * 60 * 1000);
+        timer.scheduleAtFixedRate(new TimerDeathmatchStartThread(System.currentTimeMillis() + (Settings.getPreDeathmatchTime() * 60 * 1000)), 1000, 1000);
     }
 
     public void startDeathmatch() {
@@ -51,7 +62,7 @@ public class GameManager {
     }
 
     public void endGame() {
-        Core.lootManager.endGame();
+        Core.lootManager.clearChests();
         Core.playerManager.endGame();
         this.gameState = GameState.END;
     }

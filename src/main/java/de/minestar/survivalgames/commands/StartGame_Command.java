@@ -20,7 +20,7 @@ public class StartGame_Command {
         }
 
         if (Settings.getPlayerSpawns().size() < 2) {
-            sender.sendMessage(ChatColor.RED + "No playerspawns set!");
+            sender.sendMessage(ChatColor.RED + "Too less playerspawns set!");
             return;
         }
 
@@ -30,7 +30,7 @@ public class StartGame_Command {
         }
 
         sender.sendMessage(ChatColor.GREEN + "Executing command \"Start Game\"...");
-        Core.lootManager.endGame();
+        Core.lootManager.clearChests();
         Core.gameManager.preGame();
     }
 }

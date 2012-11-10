@@ -110,7 +110,7 @@ public class PlayerListener implements Listener {
 
         event.setFormat("%2$s");
         if (this.playerManager.isSpectator(playerName)) {
-            event.setMessage(ChatColor.DARK_BLUE + playerName + ChatColor.DARK_RED + "(SPEC) " + ChatColor.GRAY + ": " + event.getMessage());
+            event.setMessage(ChatColor.DARK_RED + "(SPEC) " + ChatColor.DARK_BLUE + playerName + ChatColor.GRAY + ": " + event.getMessage());
             Iterator<Player> iteratorPlayer = event.getRecipients().iterator();
             while (iteratorPlayer.hasNext()) {
                 Player otherPlayer = iteratorPlayer.next();

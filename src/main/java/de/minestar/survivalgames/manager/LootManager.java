@@ -93,7 +93,7 @@ public class LootManager {
         }
     }
 
-    public void endGame() {
+    public void clearChests() {
         for (LootChest chest : this.chestList) {
             chest.clear();
         }

@@ -88,6 +88,7 @@ public class Core extends JavaPlugin {
     public void onDisable() {
         // disable managers
         Core.playerManager.onDisable();
+        Core.gameManager.onDisable();
 
         // print info
         Chat.printMessage(NAME + " version " + VERSION + " disabled!");
