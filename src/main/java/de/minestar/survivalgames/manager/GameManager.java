@@ -40,7 +40,7 @@ public class GameManager {
             Chat.broadcast(ChatColor.GRAY, "The games will start in " + Settings.getPreGameTime() + " minute! Prepare!");
         }
         timer.schedule(new StartGameThread(), Settings.getPreGameTime() * 60 * 1000);
-        timer.scheduleAtFixedRate(new TimerGameStartThread(System.currentTimeMillis() + (Settings.getPreGameTime() * 60 * 1000)), 1000, 1000);
+        timer.scheduleAtFixedRate(new TimerGameStartThread(System.currentTimeMillis() + (Settings.getPreGameTime() * 60 * 1000)), 1000, 1001);
     }
 
     public void startGame() {
@@ -53,7 +53,7 @@ public class GameManager {
             Chat.broadcast(ChatColor.GRAY, "PVP will be enabled in " + Settings.getPrePVPTime() + " minute!");
         }
         timer.schedule(new StartPVPThread(), Settings.getPrePVPTime() * 60 * 1000);
-        timer.scheduleAtFixedRate(new TimerPVPStartThread(System.currentTimeMillis() + (Settings.getPrePVPTime() * 60 * 1000)), 1000, 1000);
+        timer.scheduleAtFixedRate(new TimerPVPStartThread(System.currentTimeMillis() + (Settings.getPrePVPTime() * 60 * 1000)), 1000, 1001);
     }
 
     public void enablePVP() {
@@ -64,7 +64,7 @@ public class GameManager {
             Chat.broadcast(ChatColor.GRAY, "Deathmatch will start in " + Settings.getPreDeathmatchTime() + " minute!");
         }
         timer.schedule(new StartDeathmatchThread(), Settings.getPreDeathmatchTime() * 60 * 1000);
-        timer.scheduleAtFixedRate(new TimerDeathmatchStartThread(System.currentTimeMillis() + (Settings.getPreDeathmatchTime() * 60 * 1000)), 1000, 1000);
+        timer.scheduleAtFixedRate(new TimerDeathmatchStartThread(System.currentTimeMillis() + (Settings.getPreDeathmatchTime() * 60 * 1000)), 1000, 1001);
     }
 
     public void startDeathmatch() {

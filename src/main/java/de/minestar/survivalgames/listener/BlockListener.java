@@ -57,7 +57,7 @@ public class BlockListener implements Listener {
 
         // validate blockplace
         Block block = event.getBlockPlaced();
-        if (placeableBlocks.contains(block.getTypeId())) {
+        if (placeableBlocks.contains(block.getTypeId()) && !Core.playerManager.isPlayer(event.getPlayer().getName())) {
             return;
         }
 
@@ -74,7 +74,7 @@ public class BlockListener implements Listener {
 
         // validate blockbreak
         Block block = event.getBlock();
-        if (BlockListener.breakableBlocks.contains(block.getTypeId())) {
+        if (BlockListener.breakableBlocks.contains(block.getTypeId()) && !Core.playerManager.isPlayer(event.getPlayer().getName())) {
             return;
         }
 

@@ -138,7 +138,7 @@ public class PlayerListener implements Listener {
         Block block = event.getClickedBlock();
 
         // check interaction
-        if (PlayerListener.nonUsableBlocks.contains(block.getTypeId())) {
+        if (PlayerListener.nonUsableBlocks.contains(block.getTypeId()) || Core.playerManager.isSpectator(event.getPlayer().getName())) {
             event.setUseInteractedBlock(Result.DENY);
             event.setUseItemInHand(Result.DENY);
             event.setCancelled(true);

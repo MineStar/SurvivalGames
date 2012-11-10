@@ -61,6 +61,15 @@ public class PlayerManager {
         this.hidePlayer(playerName);
         this.players.remove(playerName);
         this.spectators.add(playerName);
+
+        Player player = Bukkit.getPlayer(playerName);
+        if (player != null && player.isOnline()) {
+            player.getInventory().clear();
+            player.getInventory().setHelmet(null);
+            player.getInventory().setChestplate(null);
+            player.getInventory().setLeggings(null);
+            player.getInventory().setBoots(null);
+        }
     }
 
     public boolean isSpectator(String playerName) {
