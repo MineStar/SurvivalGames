@@ -30,6 +30,7 @@ public class StartGame_Command {
         }
 
         sender.sendMessage(ChatColor.GREEN + "Executing command \"Start Game\"...");
+        Core.lootManager.endGame();
         Core.gameManager.preGame();
     }
 }

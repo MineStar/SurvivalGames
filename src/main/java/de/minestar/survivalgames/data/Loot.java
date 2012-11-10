@@ -6,11 +6,27 @@ public class Loot {
     private final int typeID;
     private final short subID;
     private final int amount;
+    private boolean used = false;
 
     public Loot(int typeID, short subID, int amount) {
         this.typeID = typeID;
         this.subID = subID;
         this.amount = amount;
+    }
+
+    /**
+     * @return the used
+     */
+    public boolean isUsed() {
+        return used;
+    }
+
+    /**
+     * @param used
+     *            the used to set
+     */
+    public void setUsed(boolean used) {
+        this.used = used;
     }
 
     /**

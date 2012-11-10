@@ -71,6 +71,22 @@ public class LootManager {
         this.refillChests();
     }
 
+    public void addChest(Location location) {
+        if (this.getChest(location) != null) {
+            return;
+        }
+        this.chestList.add(new LootChest(location, new ArrayList<Loot>()));
+    }
+
+    public LootChest getChest(Location location) {
+        for (LootChest chest : this.chestList) {
+            if (LocationUtils.equals(chest.getLocation(), location)) {
+                return chest;
+            }
+        }
+        return null;
+    }
+
     private void refillChests() {
         for (LootChest chest : this.chestList) {
             chest.refill();

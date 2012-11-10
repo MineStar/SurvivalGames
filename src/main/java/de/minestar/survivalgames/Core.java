@@ -33,6 +33,7 @@ import de.minestar.survivalgames.commands.SetSpectatorSpawn_Command;
 import de.minestar.survivalgames.commands.StartGame_Command;
 import de.minestar.survivalgames.commands.StopGame_Command;
 import de.minestar.survivalgames.data.Settings;
+import de.minestar.survivalgames.listener.AdminListener;
 import de.minestar.survivalgames.listener.BlockListener;
 import de.minestar.survivalgames.listener.ItemListener;
 import de.minestar.survivalgames.listener.PlayerListener;
@@ -74,6 +75,7 @@ public class Core extends JavaPlugin {
         Core.playerManager.onEnable();
 
         // create listeners
+        Bukkit.getPluginManager().registerEvents(new AdminListener(), this);
         Bukkit.getPluginManager().registerEvents(new BlockListener(), this);
         Bukkit.getPluginManager().registerEvents(new ItemListener(), this);
         Bukkit.getPluginManager().registerEvents(new PlayerListener(), this);

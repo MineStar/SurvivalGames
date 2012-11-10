@@ -9,6 +9,7 @@ import java.util.Random;
 import org.bukkit.Location;
 import org.bukkit.Material;
 import org.bukkit.block.Chest;
+import org.bukkit.inventory.ItemStack;
 
 import de.minestar.survivalgames.Core;
 import de.minestar.survivalgames.utils.LocationUtils;
@@ -31,12 +32,28 @@ public class LootChest {
         return (Chest) (location.getBlock().getState());
     }
 
+    public void showLoot() {
+        Chest chest = this.getChest();
+        if (chest == null) {
+            return;
+        }
+
+        this.clear();
+        int index = 0;
+        for (Loot loot : this.lootList) {
+            chest.getBlockInventory().setItem(index, loot.toItemStack());
+            index++;
+        }
+    }
+
     public void clear() {
         Chest chest = this.getChest();
         if (chest == null) {
             return;
         }
-        chest.getBlockInventory().clear();
+        for (int itemIndex = 0; itemIndex < chest.getBlockInventory().getSize(); itemIndex++) {
+            chest.getBlockInventory().setItem(itemIndex, null);
+        }
     }
 
     private void fillWithRandomItems() {
@@ -45,16 +62,38 @@ public class LootChest {
             return;
         }
 
-        int itemAmount = (int) Math.max(2, this.random.nextDouble() * 5 + 1);
-        for (int count = 0; count < itemAmount; itemAmount++) {
+        int itemAmount = 0;
+        double randomNumber = this.random.nextDouble();
+        if (randomNumber < 0.1d) {
+            itemAmount = 1;
+        } else if (randomNumber < 0.4d) {
+            itemAmount = 2;
+        } else if (randomNumber < 0.7d) {
+            itemAmount = 3;
+        } else if (randomNumber < 0.85d) {
+            itemAmount = 4;
+        } else if (randomNumber <= 0.95d) {
+            itemAmount = 5;
+        } else if (randomNumber <= 1.0d) {
+            itemAmount = 6;
+        }
+        int done = 0;
+        int count = 0;
+        while (done < itemAmount && done < this.lootList.size() && count < 100) {
+            count++;
             Loot loot = this.lootList.get((int) (this.random.nextDouble() * this.lootList.size()));
+            if (loot.isUsed()) {
+                continue;
+            }
+            loot.setUsed(true);
             int itemSlot = (int) (this.random.nextDouble() * 27);
             if (chest.getBlockInventory().getItem(itemSlot) == null || chest.getBlockInventory().getItem(itemSlot).getType().equals(Material.AIR)) {
                 chest.getBlockInventory().setItem(itemSlot, loot.toItemStack());
-            } else {
-                count--;
-                continue;
+                done++;
             }
+        }
+        for (Loot loot : this.lootList) {
+            loot.setUsed(false);
         }
     }
 
@@ -69,6 +108,22 @@ public class LootChest {
 
     public Location getLocation() {
         return location;
+    }
+
+    public void updateLootContents() {
+        Chest chest = this.getChest();
+        if (chest == null) {
+            return;
+        }
+
+        this.lootList.clear();
+        ItemStack[] contents = chest.getBlockInventory().getContents();
+        for (ItemStack stack : contents) {
+            if (stack == null || stack.getType().equals(Material.AIR)) {
+                continue;
+            }
+            this.lootList.add(new Loot(stack.getTypeId(), stack.getDurability(), stack.getAmount()));
+        }
     }
 
     public void saveChest() {
