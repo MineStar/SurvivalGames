@@ -17,6 +17,7 @@ import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
 import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
+import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
@@ -235,6 +236,21 @@ public class PlayerListener implements Listener {
         }
     }
 
+    @EventHandler
+    public void onFoodLevelChange(FoodLevelChangeEvent event) {
+        if (!event.getEntityType().equals(EntityType.PLAYER)) {
+            return;
+        }
+
+        Player player = (Player) event.getEntity();
+        if (this.playerManager.isSpectator(player.getName())) {
+            event.setCancelled(true);
+            event.setFoodLevel(20);
+            return;
+        }
+    }
+
+    @EventHandler
     public void onPlayerTeleport(PlayerTeleportEvent event) {
         if (!this.gameManager.isInGame()) {
             event.setTo(Settings.getLobbySpawn().getLocation());
