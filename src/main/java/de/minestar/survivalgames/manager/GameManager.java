@@ -34,24 +34,35 @@ public class GameManager {
         Settings.getSpectatorSpawn().getLocation().getWorld().setThundering(false);
         Settings.getSpectatorSpawn().getLocation().getWorld().setStorm(false);
         Core.playerManager.preGame();
-        Chat.broadcast(ChatColor.GRAY, "The games will start in " + Settings.getPreGameTime() + " minutes! Prepare!");
+        if (Settings.getPreGameTime() > 1) {
+            Chat.broadcast(ChatColor.GRAY, "The games will start in " + Settings.getPreGameTime() + " minutes! Prepare!");
+        } else {
+            Chat.broadcast(ChatColor.GRAY, "The games will start in " + Settings.getPreGameTime() + " minute! Prepare!");
+        }
         timer.schedule(new StartGameThread(), Settings.getPreGameTime() * 60 * 1000);
         timer.scheduleAtFixedRate(new TimerGameStartThread(System.currentTimeMillis() + (Settings.getPreGameTime() * 60 * 1000)), 1000, 1000);
-
     }
 
     public void startGame() {
         this.gameState = GameState.PRE_PVP;
         Core.lootManager.startGame();
         Core.playerManager.startGame();
-        Chat.broadcast(ChatColor.GRAY, "PVP will be enabled in " + Settings.getPrePVPTime() + " minutes!");
+        if (Settings.getPrePVPTime() > 1) {
+            Chat.broadcast(ChatColor.GRAY, "PVP will be enabled in " + Settings.getPrePVPTime() + " minutes!");
+        } else {
+            Chat.broadcast(ChatColor.GRAY, "PVP will be enabled in " + Settings.getPrePVPTime() + " minute!");
+        }
         timer.schedule(new StartPVPThread(), Settings.getPrePVPTime() * 60 * 1000);
         timer.scheduleAtFixedRate(new TimerPVPStartThread(System.currentTimeMillis() + (Settings.getPrePVPTime() * 60 * 1000)), 1000, 1000);
     }
 
     public void enablePVP() {
         this.gameState = GameState.SURVIVAL;
-        Chat.broadcast(ChatColor.GRAY, "Deathmatch will start in " + Settings.getPreDeathmatchTime() + " minutes!");
+        if (Settings.getPreDeathmatchTime() > 1) {
+            Chat.broadcast(ChatColor.GRAY, "Deathmatch will start in " + Settings.getPreDeathmatchTime() + " minutes!");
+        } else {
+            Chat.broadcast(ChatColor.GRAY, "Deathmatch will start in " + Settings.getPreDeathmatchTime() + " minute!");
+        }
         timer.schedule(new StartDeathmatchThread(), Settings.getPreDeathmatchTime() * 60 * 1000);
         timer.scheduleAtFixedRate(new TimerDeathmatchStartThread(System.currentTimeMillis() + (Settings.getPreDeathmatchTime() * 60 * 1000)), 1000, 1000);
     }
