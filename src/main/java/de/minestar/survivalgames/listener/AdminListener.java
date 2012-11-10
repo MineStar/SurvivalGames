@@ -11,18 +11,26 @@ import org.bukkit.inventory.ItemStack;
 
 import de.minestar.survivalgames.Core;
 import de.minestar.survivalgames.data.LootChest;
+import de.minestar.survivalgames.manager.GameManager;
 import de.minestar.survivalgames.manager.LootManager;
 
 public class AdminListener implements Listener {
 
     private LootManager lootManager;
+    private GameManager gameManager;
 
     public AdminListener() {
         this.lootManager = Core.lootManager;
+        this.gameManager = Core.gameManager;
     }
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
+        // only if there is no game
+        if (this.gameManager.isInGame()) {
+            return;
+        }
+
         // only ops are allowed
         if (!event.getPlayer().isOp()) {
             return;
