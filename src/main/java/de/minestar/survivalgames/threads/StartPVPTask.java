@@ -10,7 +10,6 @@ public class StartPVPTask implements Runnable {
     @Override
     public void run() {
         Core.gameManager.enablePVP();
-        Chat.broadcast(ChatColor.RED, "PVP is now enabled!");
+        Chat.broadcast(ChatColor.GOLD, "[INFO] PVP is now enabled!");
     }
-
 }

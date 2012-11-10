@@ -10,7 +10,7 @@ public class StartGameTask implements Runnable {
     @Override
     public void run() {
         Core.gameManager.startGame();
-        Chat.broadcast(ChatColor.RED, "The games have started!");
+        Chat.broadcast(ChatColor.GOLD, "[INFO] The games have started!");
     }
 
 }

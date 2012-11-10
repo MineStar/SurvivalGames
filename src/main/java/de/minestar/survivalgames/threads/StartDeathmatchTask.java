@@ -10,7 +10,7 @@ public class StartDeathmatchTask implements Runnable {
     @Override
     public void run() {
         Core.gameManager.startDeathmatch();
-        Chat.broadcast(ChatColor.RED, "Time for deathmatch!");
+        Chat.broadcast(ChatColor.GOLD, "[INFO] Time for deathmatch!");
     }
 
 }
