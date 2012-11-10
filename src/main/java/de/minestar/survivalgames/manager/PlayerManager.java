@@ -22,9 +22,14 @@ public class PlayerManager {
 
     public void preGame() {
         Player[] playerList = Bukkit.getOnlinePlayers();
+        this.clearLists();
         for (Player player : playerList) {
+            player.getInventory().clear();
+            player.getInventory().setHelmet(null);
+            player.getInventory().setChestplate(null);
+            player.getInventory().setLeggings(null);
+            player.getInventory().setBoots(null);
             players.add(player.getName());
-            spectators.remove(player.getName());
         }
         Core.playerManager.teleportAllToGameSpawn();
     }
@@ -169,14 +174,12 @@ public class PlayerManager {
         Random random = new Random();
         for (Player player : playerList) {
             if (this.isPlayer(player.getName())) {
-                System.out.println("is player");
                 // player = teleport to random spawnpoint
                 int index = (int) (random.nextDouble() * unusedSpawns.size());
                 player.teleport(unusedSpawns.get(index).getLocation());
                 unusedSpawns.remove(index);
             } else {
                 // spectator = teleport to spectatorspawn
-                System.out.println("is spectator");
                 player.teleport(Settings.getSpectatorSpawn().getLocation());
             }
         }
