@@ -6,6 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 
 import de.minestar.survivalgames.Core;
+import de.minestar.survivalgames.data.Settings;
 
 public class TimerPVPStartThread extends TimerTask {
 
@@ -26,7 +27,9 @@ public class TimerPVPStartThread extends TimerTask {
                     case 14 :
                     case 29 :
                     case 44 : {
-                        Bukkit.getScheduler().scheduleSyncDelayedTask(Core.INSTANCE, new MessageTask(ChatColor.GRAY + "PVP will be enabled in " + (restSeconds + 1) + " seconds..."));
+                        if (Settings.getPrePVPTime() != restSeconds + 1) {
+                            Bukkit.getScheduler().scheduleSyncDelayedTask(Core.INSTANCE, new MessageTask(ChatColor.GRAY + "PVP will be enabled in " + (restSeconds + 1) + " seconds..."));
+                        }
                         break;
                     }
                 }

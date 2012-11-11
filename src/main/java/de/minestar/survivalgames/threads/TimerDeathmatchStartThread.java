@@ -6,6 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 
 import de.minestar.survivalgames.Core;
+import de.minestar.survivalgames.data.Settings;
 
 public class TimerDeathmatchStartThread extends TimerTask {
 
@@ -39,7 +40,9 @@ public class TimerDeathmatchStartThread extends TimerTask {
                     case 14 :
                     case 29 :
                     case 44 : {
-                        Bukkit.getScheduler().scheduleSyncDelayedTask(Core.INSTANCE, new MessageTask(ChatColor.GRAY + "Deathmatch will start in " + (restSeconds + 1) + " seconds..."));
+                        if (Settings.getPreDeathmatchTime() != restSeconds + 1) {
+                            Bukkit.getScheduler().scheduleSyncDelayedTask(Core.INSTANCE, new MessageTask(ChatColor.GRAY + "Deathmatch will start in " + (restSeconds + 1) + " seconds..."));
+                        }
                         break;
                     }
                 }

@@ -44,15 +44,19 @@ public class GameManager {
         String text = "";
         if (mins > 0) {
             text += mins + " minute";
-            if (mins > 1) {
+            if (mins != 1) {
                 text += "s";
             }
+
+        }
+        if (secs > 0) {
             text += " and ";
+            text += secs + " second";
+            if (secs != 1) {
+                text += "s";
+            }
         }
-        text += secs + " second";
-        if (secs > 1) {
-            text += "s";
-        }
+
         return text;
     }
 
@@ -62,38 +66,25 @@ public class GameManager {
         Settings.getSpectatorSpawn().getLocation().getWorld().setThundering(false);
         Settings.getSpectatorSpawn().getLocation().getWorld().setStorm(false);
         Core.playerManager.preGame();
-        if (Settings.getPreGameTime() > 1) {
-
-            Chat.broadcastInfo("The games will start in " + this.secondsToMinutes(Settings.getPreGameTime()) + "! Prepare!");
-        } else {
-            Chat.broadcastInfo("The games will start in " + this.secondsToMinutes(Settings.getPreGameTime()) + "! Prepare!");
-        }
+        Chat.broadcastInfo("The games will start in " + this.secondsToMinutes(Settings.getPreGameTime()) + "! Prepare!");
         this.scheduleDelayedTask(new StartGameThread(), Settings.getPreGameTime() * 1000);
-        this.scheduleDelayedRepeatingTask(new TimerGameStartThread(System.currentTimeMillis() + (Settings.getPreGameTime() * 1000)), 1000, 1001);
+        this.scheduleDelayedRepeatingTask(new TimerGameStartThread(System.currentTimeMillis() + ((Settings.getPreGameTime()) * 1000)), 1000, 1001);
     }
 
     public void startGame() {
         this.gameState = GameState.PRE_PVP;
         Core.lootManager.startGame();
         Core.playerManager.startGame();
-        if (Settings.getPrePVPTime() > 1) {
-            Chat.broadcastInfo("PVP will be enabled in " + this.secondsToMinutes(Settings.getPrePVPTime()) + " minutes!");
-        } else {
-            Chat.broadcastInfo("PVP will be enabled in " + this.secondsToMinutes(Settings.getPrePVPTime()) + " minute!");
-        }
+        Chat.broadcastInfo("PVP will be enabled in " + this.secondsToMinutes(Settings.getPrePVPTime()) + "!");
         this.scheduleDelayedTask(new StartPVPThread(), Settings.getPrePVPTime() * 1000);
-        this.scheduleDelayedRepeatingTask(new TimerPVPStartThread(System.currentTimeMillis() + (Settings.getPrePVPTime() * 1000)), 1000, 1001);
+        this.scheduleDelayedRepeatingTask(new TimerPVPStartThread(System.currentTimeMillis() + ((Settings.getPrePVPTime()) * 1000)), 1000, 1001);
     }
 
     public void enablePVP() {
         this.gameState = GameState.SURVIVAL;
-        if (Settings.getPreDeathmatchTime() > 1) {
-            Chat.broadcastInfo("Deathmatch will start in " + this.secondsToMinutes(Settings.getPreDeathmatchTime()) + " minutes!");
-        } else {
-            Chat.broadcastInfo("Deathmatch will start in " + this.secondsToMinutes(Settings.getPreDeathmatchTime()) + " minute!");
-        }
+        Chat.broadcastInfo("Deathmatch will start in " + this.secondsToMinutes(Settings.getPreDeathmatchTime()) + "!");
         this.scheduleDelayedTask(new StartDeathmatchThread(), Settings.getPreDeathmatchTime() * 1000);
-        this.scheduleDelayedRepeatingTask(new TimerDeathmatchStartThread(System.currentTimeMillis() + (Settings.getPreDeathmatchTime() * 1000)), 1000, 1001);
+        this.scheduleDelayedRepeatingTask(new TimerDeathmatchStartThread(System.currentTimeMillis() + ((Settings.getPreDeathmatchTime()) * 1000)), 1000, 1001);
     }
 
     public void startDeathmatch() {

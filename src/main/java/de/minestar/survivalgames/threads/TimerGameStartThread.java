@@ -6,6 +6,7 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 
 import de.minestar.survivalgames.Core;
+import de.minestar.survivalgames.data.Settings;
 
 public class TimerGameStartThread extends TimerTask {
 
@@ -38,7 +39,9 @@ public class TimerGameStartThread extends TimerTask {
                 case 14 :
                 case 29 :
                 case 44 : {
-                    Bukkit.getScheduler().scheduleSyncDelayedTask(Core.INSTANCE, new MessageTask(ChatColor.GRAY + "The games will start in " + (restSeconds + 1) + " seconds..."));
+                    if (Settings.getPreGameTime() != restSeconds + 1) {
+                        Bukkit.getScheduler().scheduleSyncDelayedTask(Core.INSTANCE, new MessageTask(ChatColor.GRAY + "The games will start in " + (restSeconds + 1) + " seconds..."));
+                    }
                     break;
                 }
             }
