@@ -9,7 +9,9 @@ public class LootRefillThread extends TimerTask {
 
     @Override
     public void run() {
-        Core.lootManager.refillChests();
-        Chat.broadcastInfo("All chests have been refilled!");
+        if (Core.gameManager.isInGame() && !Core.gameManager.isInDeathmatch()) {
+            Core.lootManager.refillChests();
+            Chat.broadcastInfo("All chests have been refilled!");
+        }
     }
 }

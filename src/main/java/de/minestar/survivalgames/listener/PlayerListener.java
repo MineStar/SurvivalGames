@@ -18,6 +18,7 @@ import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
+import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
 import org.bukkit.event.player.PlayerJoinEvent;
@@ -83,6 +84,19 @@ public class PlayerListener implements Listener {
         } else {
             event.setMessage(ChatColor.AQUA + playerName + ": " + ChatColor.GRAY + event.getMessage());
         }
+    }
+
+    @EventHandler
+    public void onPlayerCommand(PlayerCommandPreprocessEvent event) {
+        if (!this.gameManager.isInGame()) {
+            return;
+        }
+
+        // only ops!
+        if (event.getPlayer().isOp()) {
+            return;
+        }
+        event.setCancelled(true);
     }
 
     @EventHandler
