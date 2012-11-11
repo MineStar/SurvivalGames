@@ -1,10 +1,8 @@
 package de.minestar.survivalgames.listener;
 
-import java.util.HashSet;
 import java.util.Iterator;
 
 import org.bukkit.ChatColor;
-import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.entity.CraftEntity;
@@ -39,8 +37,6 @@ import de.minestar.survivalgames.utils.LocationUtils;
 
 public class PlayerListener implements Listener {
 
-    private static HashSet<Integer> nonUsableBlocks = new HashSet<Integer>();
-
     private GameManager gameManager;
     private PlayerManager playerManager;
 
@@ -50,41 +46,6 @@ public class PlayerListener implements Listener {
     }
 
     public void onEnable() {
-        if (Settings.isBlockDispenserInteraction()) {
-            PlayerListener.nonUsableBlocks.add(Material.DISPENSER.getId());
-            return;
-        }
-
-        if (Settings.isBlockDoorInteraction()) {
-            PlayerListener.nonUsableBlocks.add(Material.WOODEN_DOOR.getId());
-            return;
-        }
-
-        if (Settings.isBlockStoneButtonInteraction()) {
-            PlayerListener.nonUsableBlocks.add(Material.STONE_BUTTON.getId());
-            return;
-        }
-
-        if (Settings.isBlockWoodButtonInteraction()) {
-            PlayerListener.nonUsableBlocks.add(Material.WOOD_BUTTON.getId());
-            return;
-        }
-
-        if (Settings.isBlockLeverInteraction()) {
-            PlayerListener.nonUsableBlocks.add(Material.LEVER.getId());
-            return;
-        }
-
-        if (Settings.isBlockFurnaceInteraction()) {
-            PlayerListener.nonUsableBlocks.add(Material.FURNACE.getId());
-            PlayerListener.nonUsableBlocks.add(Material.BURNING_FURNACE.getId());
-            return;
-        }
-
-        if (Settings.isBlockWorkbenchInteraction()) {
-            PlayerListener.nonUsableBlocks.add(Material.WORKBENCH.getId());
-            return;
-        }
     }
 
     @EventHandler
@@ -111,7 +72,7 @@ public class PlayerListener implements Listener {
 
         event.setFormat("%2$s");
         if (this.playerManager.isSpectator(playerName)) {
-            event.setMessage(ChatColor.DARK_RED + "(SPEC) " + ChatColor.DARK_BLUE + playerName + ChatColor.GRAY + ": " + event.getMessage());
+            event.setMessage(ChatColor.DARK_RED + "(SPEC) " + ChatColor.DARK_BLUE + playerName + ": " + ChatColor.GRAY + event.getMessage());
             Iterator<Player> iteratorPlayer = event.getRecipients().iterator();
             while (iteratorPlayer.hasNext()) {
                 Player otherPlayer = iteratorPlayer.next();
@@ -120,7 +81,7 @@ public class PlayerListener implements Listener {
                 }
             }
         } else {
-            event.setMessage(ChatColor.AQUA + playerName + ChatColor.GRAY + ": " + event.getMessage());
+            event.setMessage(ChatColor.AQUA + playerName + ": " + ChatColor.GRAY + event.getMessage());
         }
     }
 
@@ -139,7 +100,7 @@ public class PlayerListener implements Listener {
         Block block = event.getClickedBlock();
 
         // check interaction
-        if (PlayerListener.nonUsableBlocks.contains(block.getTypeId()) || Core.playerManager.isSpectator(event.getPlayer().getName())) {
+        if (Settings.isNonUseable(block.getType()) || Core.playerManager.isSpectator(event.getPlayer().getName())) {
             event.setUseInteractedBlock(Result.DENY);
             event.setUseItemInHand(Result.DENY);
             event.setCancelled(true);

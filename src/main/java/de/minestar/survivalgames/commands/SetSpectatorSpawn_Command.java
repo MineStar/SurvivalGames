@@ -10,7 +10,7 @@ public class SetSpectatorSpawn_Command {
 
     public void execute(Player sender, String[] args) {
         Settings.setSpectatorSpawn(new PlayerSpawn(-1, sender.getLocation()));
-        Settings.saveSettings();
+        Settings.saveConfig();
         sender.sendMessage(ChatColor.GREEN + "Spectatorspawn set!");
     }
 }

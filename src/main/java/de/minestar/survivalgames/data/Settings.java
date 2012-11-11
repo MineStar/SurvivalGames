@@ -2,26 +2,22 @@ package de.minestar.survivalgames.data;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
+import org.bukkit.Material;
 import org.bukkit.configuration.file.YamlConfiguration;
+
+import com.google.common.collect.Lists;
 
 import de.minestar.survivalgames.Core;
 import de.minestar.survivalgames.utils.Chat;
 import de.minestar.survivalgames.utils.LocationUtils;
 
 public class Settings {
-
-    private static boolean blockDispenserInteraction = true;
-    private static boolean blockDoorInteraction = false;
-    private static boolean blockStoneButtonInteraction = false;
-    private static boolean blockWoodButtonInteraction = false;
-    private static boolean blockLeverInteraction = false;
-    private static boolean blockFurnaceInteraction = false;
-    private static boolean blockWorkbenchInteraction = false;
 
     private static HashSet<PlayerSpawn> playerSpawns;
     private static PlayerSpawn spectatorSpawn = null, lobbySpawn = null;
@@ -31,12 +27,98 @@ public class Settings {
     private static int prePVPTime = 2;
     private static int preDeathmatchTime = 28;
 
+    private static HashSet<Integer> breakableBlocks = new HashSet<Integer>(Arrays.asList(Material.VINE.getId(), Material.MELON.getId(), Material.WHEAT.getId(), Material.BROWN_MUSHROOM.getId(), Material.RED_MUSHROOM.getId(), Material.SUGAR_CANE_BLOCK.getId(), Material.SAPLING.getId()));
+    private static HashSet<Integer> placeableBlocks = new HashSet<Integer>(Arrays.asList(Material.VINE.getId(), Material.CAKE_BLOCK.getId(), Material.CAKE.getId(), Material.SAPLING.getId()));
+    private static HashSet<Integer> nonUseableBlocks = new HashSet<Integer>(Arrays.asList(Material.DISPENSER.getId()));
+    private static ArrayList<Integer> lootRefillTimes = new ArrayList<Integer>(Arrays.asList(15));
+
     public static void init() {
         Settings.dataFolder = Core.INSTANCE.getDataFolder();
         Settings.configFile = new File(dataFolder, "config.yml");
         Settings.playerSpawnFile = new File(Settings.dataFolder, "playerSpawns.yml");
-        Settings.loadSettings();
+        Settings.loadConfig();
         Settings.loadPlayerSpawns();
+    }
+
+    private static void loadConfig() {
+        try {
+            YamlConfiguration config = new YamlConfiguration();
+            if (!Settings.configFile.exists()) {
+                Settings.saveConfig();
+            }
+
+            config.load(Settings.configFile);
+
+            // load timinigs
+            Settings.preGameTime = config.getInt("timings.pre.game", Settings.preGameTime);
+            Settings.prePVPTime = config.getInt("timings.pre.pvp", Settings.prePVPTime);
+            Settings.preDeathmatchTime = config.getInt("timings.pre.deathmatch", Settings.preDeathmatchTime);
+
+            // load refilltimes
+            Settings.lootRefillTimes = new ArrayList<Integer>();
+            List<Integer> refillList = config.getIntegerList("timings.lootRefill");
+            if (refillList != null) {
+                for (int ID : refillList) {
+                    Settings.lootRefillTimes.add(ID);
+                }
+            }
+
+            // load breakable blocks
+            Settings.breakableBlocks = new HashSet<Integer>();
+            List<Integer> breakList = config.getIntegerList("blocks.breakable");
+            if (breakList != null) {
+                for (int ID : breakList) {
+                    Settings.breakableBlocks.add(ID);
+                }
+            }
+
+            // load placeable blocks
+            Settings.placeableBlocks = new HashSet<Integer>();
+            List<Integer> placeList = config.getIntegerList("blocks.placeable");
+            if (placeList != null) {
+                for (int ID : placeList) {
+                    Settings.placeableBlocks.add(ID);
+                }
+            }
+
+            // load non useable blocks
+            Settings.nonUseableBlocks = new HashSet<Integer>();
+            List<Integer> nonUseList = config.getIntegerList("blocks.nonUseable");
+            if (nonUseList != null) {
+                for (int ID : nonUseList) {
+                    Settings.nonUseableBlocks.add(ID);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+    }
+
+    public static void saveConfig() {
+        try {
+            YamlConfiguration config = new YamlConfiguration();
+            if (Settings.configFile.exists()) {
+                Settings.configFile.delete();
+            }
+
+            // save timings
+            config.set("timings.pre.game", Settings.preGameTime);
+            config.set("timings.pre.pvp", Settings.prePVPTime);
+            config.set("timings.pre.deathmatch", Settings.preDeathmatchTime);
+
+            // save refilltimes
+            config.set("timings.lootRefill", Settings.lootRefillTimes);
+
+            // save blockdata
+            config.set("blocks.breakable", Lists.newArrayList(Settings.breakableBlocks));
+            config.set("blocks.placeable", Lists.newArrayList(Settings.placeableBlocks));
+            config.set("blocks.nonUseable", Lists.newArrayList(Settings.nonUseableBlocks));
+
+            // save to file
+            config.save(Settings.configFile);
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
     }
 
     private static void loadPlayerSpawns() {
@@ -46,6 +128,8 @@ public class Settings {
             if (!Settings.playerSpawnFile.exists()) {
                 Settings.playerSpawnFile.createNewFile();
             }
+
+            // load playerspawns
             config.load(Settings.playerSpawnFile);
             List<String> locList = config.getStringList("game.playerSpawns");
             int IDCount = 0;
@@ -109,107 +193,11 @@ public class Settings {
                 config.set("game.lobbySpawn", LocationUtils.toString(Settings.lobbySpawn.getLocation()));
             }
 
+            // save to file
             config.save(Settings.playerSpawnFile);
         } catch (Exception e) {
             e.printStackTrace();
         }
-    }
-
-    private static void loadSettings() {
-        try {
-            YamlConfiguration config = new YamlConfiguration();
-            if (!Settings.configFile.exists()) {
-                Settings.saveSettings();
-            }
-            config.load(Settings.configFile);
-            Settings.blockDispenserInteraction = config.getBoolean("block.interaction.dispenser", true);
-            Settings.blockDoorInteraction = config.getBoolean("block.interaction.door", false);
-            Settings.blockStoneButtonInteraction = config.getBoolean("block.interaction.stonebutton", false);
-            Settings.blockWoodButtonInteraction = config.getBoolean("block.interaction.woodbutton", false);
-            Settings.blockLeverInteraction = config.getBoolean("block.interaction.lever", false);
-            Settings.blockFurnaceInteraction = config.getBoolean("block.interaction.furnace", false);
-            Settings.blockWorkbenchInteraction = config.getBoolean("block.interaction.workbench", false);
-
-            Settings.preGameTime = config.getInt("timings.pre.game", Settings.preGameTime);
-            Settings.prePVPTime = config.getInt("timings.pre.pvp", Settings.prePVPTime);
-            Settings.preDeathmatchTime = config.getInt("timings.pre.deathmatch", Settings.preDeathmatchTime);
-
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    public static void saveSettings() {
-        try {
-            YamlConfiguration config = new YamlConfiguration();
-            if (Settings.configFile.exists()) {
-                Settings.configFile.delete();
-            }
-            config.set("block.interaction.dispenser", Settings.blockDispenserInteraction);
-            config.set("block.interaction.door", Settings.blockDoorInteraction);
-            config.set("block.interaction.stonebutton", Settings.blockStoneButtonInteraction);
-            config.set("block.interaction.woodbutton", Settings.blockWoodButtonInteraction);
-            config.set("block.interaction.lever", Settings.blockLeverInteraction);
-            config.set("block.interaction.furnace", Settings.blockFurnaceInteraction);
-            config.set("block.interaction.workbench", Settings.blockWorkbenchInteraction);
-
-            config.set("timings.pre.game", Settings.preGameTime);
-            config.set("timings.pre.pvp", Settings.prePVPTime);
-            config.set("timings.pre.deathmatch", Settings.preDeathmatchTime);
-
-            config.save(Settings.configFile);
-        } catch (Exception e) {
-            e.printStackTrace();
-        }
-    }
-
-    /**
-     * @return the blockDispenserInteraction
-     */
-    public static boolean isBlockDispenserInteraction() {
-        return blockDispenserInteraction;
-    }
-
-    /**
-     * @return the blockDoorInteraction
-     */
-    public static boolean isBlockDoorInteraction() {
-        return blockDoorInteraction;
-    }
-
-    /**
-     * @return the blockStoneButtonInteraction
-     */
-    public static boolean isBlockStoneButtonInteraction() {
-        return blockStoneButtonInteraction;
-    }
-
-    /**
-     * @return the blockWoodButtonInteraction
-     */
-    public static boolean isBlockWoodButtonInteraction() {
-        return blockWoodButtonInteraction;
-    }
-
-    /**
-     * @return the blockLeverInteraction
-     */
-    public static boolean isBlockLeverInteraction() {
-        return blockLeverInteraction;
-    }
-
-    /**
-     * @return the blockFurnaceInteraction
-     */
-    public static boolean isBlockFurnaceInteraction() {
-        return blockFurnaceInteraction;
-    }
-
-    /**
-     * @return the blockWorkbenchInteraction
-     */
-    public static boolean isBlockWorkbenchInteraction() {
-        return blockWorkbenchInteraction;
     }
 
     /**
@@ -231,62 +219,6 @@ public class Settings {
      */
     public static long getPrePVPTime() {
         return prePVPTime;
-    }
-
-    /**
-     * @param blockDispenserInteraction
-     *            the blockDispenserInteraction to set
-     */
-    public static void setBlockDispenserInteraction(boolean blockDispenserInteraction) {
-        Settings.blockDispenserInteraction = blockDispenserInteraction;
-    }
-
-    /**
-     * @param blockDoorInteraction
-     *            the blockDoorInteraction to set
-     */
-    public static void setBlockDoorInteraction(boolean blockDoorInteraction) {
-        Settings.blockDoorInteraction = blockDoorInteraction;
-    }
-
-    /**
-     * @param blockStoneButtonInteraction
-     *            the blockStoneButtonInteraction to set
-     */
-    public static void setBlockStoneButtonInteraction(boolean blockStoneButtonInteraction) {
-        Settings.blockStoneButtonInteraction = blockStoneButtonInteraction;
-    }
-
-    /**
-     * @param blockWoodButtonInteraction
-     *            the blockWoodButtonInteraction to set
-     */
-    public static void setBlockWoodButtonInteraction(boolean blockWoodButtonInteraction) {
-        Settings.blockWoodButtonInteraction = blockWoodButtonInteraction;
-    }
-
-    /**
-     * @param blockLeverInteraction
-     *            the blockLeverInteraction to set
-     */
-    public static void setBlockLeverInteraction(boolean blockLeverInteraction) {
-        Settings.blockLeverInteraction = blockLeverInteraction;
-    }
-
-    /**
-     * @param blockFurnaceInteraction
-     *            the blockFurnaceInteraction to set
-     */
-    public static void setBlockFurnaceInteraction(boolean blockFurnaceInteraction) {
-        Settings.blockFurnaceInteraction = blockFurnaceInteraction;
-    }
-
-    /**
-     * @param blockWorkbenchInteraction
-     *            the blockWorkbenchInteraction to set
-     */
-    public static void setBlockWorkbenchInteraction(boolean blockWorkbenchInteraction) {
-        Settings.blockWorkbenchInteraction = blockWorkbenchInteraction;
     }
 
     /**
@@ -386,5 +318,17 @@ public class Settings {
         Settings.playerSpawns.remove(spawn);
         Settings.savePlayerSpawns();
         return true;
+    }
+
+    public static boolean isBreakable(Material material) {
+        return Settings.breakableBlocks.contains(material.getId());
+    }
+
+    public static boolean isPlaceable(Material material) {
+        return Settings.placeableBlocks.contains(material.getId());
+    }
+
+    public static boolean isNonUseable(Material material) {
+        return Settings.nonUseableBlocks.contains(material.getId());
     }
 }
