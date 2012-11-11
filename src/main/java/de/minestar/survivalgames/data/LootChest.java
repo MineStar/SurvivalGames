@@ -79,7 +79,7 @@ public class LootChest {
         }
         int done = 0;
         int count = 0;
-        while (done < itemAmount && done < this.lootList.size() && count < 100) {
+        while (done < itemAmount && done < this.lootList.size() && count < 10) {
             count++;
             Loot loot = this.lootList.get((int) (this.random.nextDouble() * this.lootList.size()));
             if (loot.isUsed()) {

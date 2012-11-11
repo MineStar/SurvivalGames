@@ -5,6 +5,7 @@ import java.util.HashSet;
 import java.util.Random;
 
 import org.bukkit.Bukkit;
+import org.bukkit.GameMode;
 import org.bukkit.entity.Player;
 
 import de.minestar.survivalgames.Core;
@@ -24,14 +25,21 @@ public class PlayerManager {
         Player[] playerList = Bukkit.getOnlinePlayers();
         this.clearLists();
         for (Player player : playerList) {
-            player.getInventory().clear();
-            player.getInventory().setHelmet(null);
-            player.getInventory().setChestplate(null);
-            player.getInventory().setLeggings(null);
-            player.getInventory().setBoots(null);
+            this.resetPlayer(player);
             players.add(player.getName());
         }
         Core.playerManager.teleportAllToGameSpawn();
+    }
+
+    private void resetPlayer(Player player) {
+        player.setHealth(20);
+        player.setFoodLevel(20);
+        player.setGameMode(GameMode.SURVIVAL);
+        player.getInventory().clear();
+        player.getInventory().setHelmet(null);
+        player.getInventory().setChestplate(null);
+        player.getInventory().setLeggings(null);
+        player.getInventory().setBoots(null);
     }
 
     public void startGame() {
@@ -64,11 +72,7 @@ public class PlayerManager {
 
         Player player = Bukkit.getPlayer(playerName);
         if (player != null && player.isOnline()) {
-            player.getInventory().clear();
-            player.getInventory().setHelmet(null);
-            player.getInventory().setChestplate(null);
-            player.getInventory().setLeggings(null);
-            player.getInventory().setBoots(null);
+            this.resetPlayer(player);
         }
     }
 

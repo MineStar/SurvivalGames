@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
+import java.util.Random;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -11,6 +12,8 @@ import org.bukkit.Location;
 import de.minestar.survivalgames.Core;
 import de.minestar.survivalgames.data.Loot;
 import de.minestar.survivalgames.data.LootChest;
+import de.minestar.survivalgames.data.Settings;
+import de.minestar.survivalgames.threads.LootRefillThread;
 import de.minestar.survivalgames.utils.Chat;
 import de.minestar.survivalgames.utils.LocationUtils;
 
@@ -87,9 +90,13 @@ public class LootManager {
         return null;
     }
 
-    private void refillChests() {
+    public void refillChests() {
         for (LootChest chest : this.chestList) {
             chest.refill();
+        }
+        int refillTime = Settings.getNextRefillTime();
+        if (refillTime > 0) {
+            Core.gameManager.scheduleDelayedTask(new LootRefillThread(), (refillTime + (new Random()).nextInt(3)) * 60 * 1000);
         }
     }
 

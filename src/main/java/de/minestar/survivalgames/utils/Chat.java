@@ -41,4 +41,8 @@ public class Chat {
     public static void broadcast(String message) {
         Bukkit.broadcastMessage(message);
     }
+
+    public static void broadcastInfo(String message) {
+        Bukkit.broadcastMessage(ChatColor.GOLD + "[INFO] " + ChatColor.GREEN + message);
+    }
 }

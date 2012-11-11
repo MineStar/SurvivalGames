@@ -22,10 +22,11 @@ public class TimerDeathmatchStartThread extends TimerTask {
         final int restMinutes = (int) (restSeconds / 60);
         if (restMinutes < 1) {
             switch (restSeconds) {
-                case 1 : {
-                    Bukkit.getScheduler().scheduleSyncDelayedTask(Core.INSTANCE, new MessageTask(ChatColor.GOLD + "[INFO] Deathmatch will start in " + restSeconds + " second..."));
+                case 0 : {
+                    Bukkit.getScheduler().scheduleSyncDelayedTask(Core.INSTANCE, new MessageTask(ChatColor.GRAY + "Deathmatch will start in " + (restSeconds + 1) + " second..."));
                     break;
                 }
+                case 1 :
                 case 2 :
                 case 3 :
                 case 4 :
@@ -34,18 +35,17 @@ public class TimerDeathmatchStartThread extends TimerTask {
                 case 7 :
                 case 8 :
                 case 9 :
-                case 10 :
-                case 15 :
-                case 30 :
-                case 45 : {
-                    Bukkit.getScheduler().scheduleSyncDelayedTask(Core.INSTANCE, new MessageTask(ChatColor.GOLD + "[INFO] Deathmatch will start in " + restSeconds + " seconds..."));
+                case 14 :
+                case 29 :
+                case 44 : {
+                    Bukkit.getScheduler().scheduleSyncDelayedTask(Core.INSTANCE, new MessageTask(ChatColor.GRAY + "Deathmatch will start in " + (restSeconds + 1) + " seconds..."));
                     break;
                 }
             }
         } else {
             switch (restSeconds) {
                 case 1 : {
-                    Bukkit.getScheduler().scheduleSyncDelayedTask(Core.INSTANCE, new MessageTask(ChatColor.GOLD + "[INFO] Deathmatch will start in " + restMinutes + " minute..."));
+                    Bukkit.getScheduler().scheduleSyncDelayedTask(Core.INSTANCE, new MessageTask(ChatColor.GRAY + "Deathmatch will start in " + restMinutes + " minute..."));
                     break;
                 }
                 case 5 :
@@ -55,7 +55,7 @@ public class TimerDeathmatchStartThread extends TimerTask {
                 case 25 :
                 case 30 :
                 case 45 : {
-                    Bukkit.getScheduler().scheduleSyncDelayedTask(Core.INSTANCE, new MessageTask(ChatColor.GOLD + "[INFO] Deathmatch will start in " + restMinutes + " minutes..."));
+                    Bukkit.getScheduler().scheduleSyncDelayedTask(Core.INSTANCE, new MessageTask(ChatColor.GRAY + "Deathmatch will start in " + restMinutes + " minutes..."));
                     break;
                 }
             }

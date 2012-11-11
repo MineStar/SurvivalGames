@@ -18,6 +18,5 @@ public class StopGame_Command {
         Core.gameManager.endGame();
         Core.playerManager.teleportAllToLobbySpawn();
         Chat.broadcast(ChatColor.RED, "GAME HAS BEEN STOPPED BY AN ADMIN!");
-
     }
 }

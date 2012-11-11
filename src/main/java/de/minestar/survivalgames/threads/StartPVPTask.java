@@ -1,7 +1,5 @@
 package de.minestar.survivalgames.threads;
 
-import org.bukkit.ChatColor;
-
 import de.minestar.survivalgames.Core;
 import de.minestar.survivalgames.utils.Chat;
 
@@ -9,7 +7,7 @@ public class StartPVPTask implements Runnable {
 
     @Override
     public void run() {
+        Chat.broadcastInfo("PVP is now enabled!");
         Core.gameManager.enablePVP();
-        Chat.broadcast(ChatColor.GOLD, "[INFO] PVP is now enabled!");
     }
 }

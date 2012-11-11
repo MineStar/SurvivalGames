@@ -1,8 +1,7 @@
 package de.minestar.survivalgames.manager;
 
 import java.util.Timer;
-
-import org.bukkit.ChatColor;
+import java.util.TimerTask;
 
 import de.minestar.survivalgames.Core;
 import de.minestar.survivalgames.data.GameState;
@@ -28,6 +27,14 @@ public class GameManager {
         timer.cancel();
     }
 
+    public void scheduleDelayedTask(TimerTask task, long delay) {
+        timer.schedule(task, delay);
+    }
+
+    public void scheduleDelayedRepeatingTask(TimerTask task, long startDelay, long period) {
+        timer.scheduleAtFixedRate(task, startDelay, period);
+    }
+
     public void preGame() {
         this.gameState = GameState.PREGAME;
         Settings.getSpectatorSpawn().getLocation().getWorld().setTime(2000);
@@ -35,12 +42,12 @@ public class GameManager {
         Settings.getSpectatorSpawn().getLocation().getWorld().setStorm(false);
         Core.playerManager.preGame();
         if (Settings.getPreGameTime() > 1) {
-            Chat.broadcast(ChatColor.GRAY, "The games will start in " + Settings.getPreGameTime() + " minutes! Prepare!");
+            Chat.broadcastInfo("The games will start in " + Settings.getPreGameTime() + " minutes! Prepare!");
         } else {
-            Chat.broadcast(ChatColor.GRAY, "The games will start in " + Settings.getPreGameTime() + " minute! Prepare!");
+            Chat.broadcastInfo("The games will start in " + Settings.getPreGameTime() + " minute! Prepare!");
         }
-        timer.schedule(new StartGameThread(), Settings.getPreGameTime() * 60 * 1000);
-        timer.scheduleAtFixedRate(new TimerGameStartThread(System.currentTimeMillis() + (Settings.getPreGameTime() * 60 * 1000)), 1000, 1001);
+        this.scheduleDelayedTask(new StartGameThread(), Settings.getPreGameTime() * 60 * 1000);
+        this.scheduleDelayedRepeatingTask(new TimerGameStartThread(System.currentTimeMillis() + (Settings.getPreGameTime() * 60 * 1000)), 1000, 1001);
     }
 
     public void startGame() {
@@ -48,23 +55,23 @@ public class GameManager {
         Core.lootManager.startGame();
         Core.playerManager.startGame();
         if (Settings.getPrePVPTime() > 1) {
-            Chat.broadcast(ChatColor.GRAY, "PVP will be enabled in " + Settings.getPrePVPTime() + " minutes!");
+            Chat.broadcastInfo("PVP will be enabled in " + Settings.getPrePVPTime() + " minutes!");
         } else {
-            Chat.broadcast(ChatColor.GRAY, "PVP will be enabled in " + Settings.getPrePVPTime() + " minute!");
+            Chat.broadcastInfo("PVP will be enabled in " + Settings.getPrePVPTime() + " minute!");
         }
-        timer.schedule(new StartPVPThread(), Settings.getPrePVPTime() * 60 * 1000);
-        timer.scheduleAtFixedRate(new TimerPVPStartThread(System.currentTimeMillis() + (Settings.getPrePVPTime() * 60 * 1000)), 1000, 1001);
+        this.scheduleDelayedTask(new StartPVPThread(), Settings.getPrePVPTime() * 60 * 1000);
+        this.scheduleDelayedRepeatingTask(new TimerPVPStartThread(System.currentTimeMillis() + (Settings.getPrePVPTime() * 60 * 1000)), 1000, 1001);
     }
 
     public void enablePVP() {
         this.gameState = GameState.SURVIVAL;
         if (Settings.getPreDeathmatchTime() > 1) {
-            Chat.broadcast(ChatColor.GRAY, "Deathmatch will start in " + Settings.getPreDeathmatchTime() + " minutes!");
+            Chat.broadcastInfo("Deathmatch will start in " + Settings.getPreDeathmatchTime() + " minutes!");
         } else {
-            Chat.broadcast(ChatColor.GRAY, "Deathmatch will start in " + Settings.getPreDeathmatchTime() + " minute!");
+            Chat.broadcastInfo("Deathmatch will start in " + Settings.getPreDeathmatchTime() + " minute!");
         }
-        timer.schedule(new StartDeathmatchThread(), Settings.getPreDeathmatchTime() * 60 * 1000);
-        timer.scheduleAtFixedRate(new TimerDeathmatchStartThread(System.currentTimeMillis() + (Settings.getPreDeathmatchTime() * 60 * 1000)), 1000, 1001);
+        this.scheduleDelayedTask(new StartDeathmatchThread(), Settings.getPreDeathmatchTime() * 60 * 1000);
+        this.scheduleDelayedRepeatingTask(new TimerDeathmatchStartThread(System.currentTimeMillis() + (Settings.getPreDeathmatchTime() * 60 * 1000)), 1000, 1001);
     }
 
     public void startDeathmatch() {
@@ -76,6 +83,7 @@ public class GameManager {
         Core.lootManager.clearChests();
         Core.playerManager.endGame();
         this.gameState = GameState.END;
+        this.onDisable();
     }
 
     public boolean isInGame() {

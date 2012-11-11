@@ -32,6 +32,8 @@ public class Settings {
     private static HashSet<Integer> nonUseableBlocks = new HashSet<Integer>(Arrays.asList(Material.DISPENSER.getId()));
     private static ArrayList<Integer> lootRefillTimes = new ArrayList<Integer>(Arrays.asList(15));
 
+    private static int currentRefill = -1;
+
     public static void init() {
         Settings.dataFolder = Core.INSTANCE.getDataFolder();
         Settings.configFile = new File(dataFolder, "config.yml");
@@ -50,9 +52,9 @@ public class Settings {
             config.load(Settings.configFile);
 
             // load timinigs
-            Settings.preGameTime = config.getInt("timings.pre.game", Settings.preGameTime);
-            Settings.prePVPTime = config.getInt("timings.pre.pvp", Settings.prePVPTime);
-            Settings.preDeathmatchTime = config.getInt("timings.pre.deathmatch", Settings.preDeathmatchTime);
+            Settings.preGameTime = config.getInt("timings.game.preGame", Settings.preGameTime);
+            Settings.prePVPTime = config.getInt("timings.game.prePVP", Settings.prePVPTime);
+            Settings.preDeathmatchTime = config.getInt("timings.game.preDeathmatch", Settings.preDeathmatchTime);
 
             // load refilltimes
             Settings.lootRefillTimes = new ArrayList<Integer>();
@@ -62,31 +64,41 @@ public class Settings {
                     Settings.lootRefillTimes.add(ID);
                 }
             }
+            Settings.currentRefill = Settings.lootRefillTimes.size() - 1;
 
             // load breakable blocks
             Settings.breakableBlocks = new HashSet<Integer>();
-            List<Integer> breakList = config.getIntegerList("blocks.breakable");
+            List<String> breakList = config.getStringList("blocks.breakable");
             if (breakList != null) {
-                for (int ID : breakList) {
-                    Settings.breakableBlocks.add(ID);
+                for (String name : breakList) {
+                    int ID = Settings.StringToMaterialID(name);
+                    if (ID != Material.AIR.getId()) {
+                        Settings.breakableBlocks.add(ID);
+                    }
                 }
             }
 
             // load placeable blocks
             Settings.placeableBlocks = new HashSet<Integer>();
-            List<Integer> placeList = config.getIntegerList("blocks.placeable");
+            List<String> placeList = config.getStringList("blocks.placeable");
             if (placeList != null) {
-                for (int ID : placeList) {
-                    Settings.placeableBlocks.add(ID);
+                for (String name : placeList) {
+                    int ID = Settings.StringToMaterialID(name);
+                    if (ID != Material.AIR.getId()) {
+                        Settings.placeableBlocks.add(ID);
+                    }
                 }
             }
 
             // load non useable blocks
             Settings.nonUseableBlocks = new HashSet<Integer>();
-            List<Integer> nonUseList = config.getIntegerList("blocks.nonUseable");
+            List<String> nonUseList = config.getStringList("blocks.nonUseable");
             if (nonUseList != null) {
-                for (int ID : nonUseList) {
-                    Settings.nonUseableBlocks.add(ID);
+                for (String name : nonUseList) {
+                    int ID = Settings.StringToMaterialID(name);
+                    if (ID != Material.AIR.getId()) {
+                        Settings.nonUseableBlocks.add(ID);
+                    }
                 }
             }
         } catch (Exception e) {
@@ -102,17 +114,42 @@ public class Settings {
             }
 
             // save timings
-            config.set("timings.pre.game", Settings.preGameTime);
-            config.set("timings.pre.pvp", Settings.prePVPTime);
-            config.set("timings.pre.deathmatch", Settings.preDeathmatchTime);
+            config.set("timings.game.preGame", Settings.preGameTime);
+            config.set("timings.game.prePVP", Settings.prePVPTime);
+            config.set("timings.game.preDeathmatch", Settings.preDeathmatchTime);
 
             // save refilltimes
             config.set("timings.lootRefill", Settings.lootRefillTimes);
 
-            // save blockdata
-            config.set("blocks.breakable", Lists.newArrayList(Settings.breakableBlocks));
-            config.set("blocks.placeable", Lists.newArrayList(Settings.placeableBlocks));
-            config.set("blocks.nonUseable", Lists.newArrayList(Settings.nonUseableBlocks));
+            // save breakable blocks
+            ArrayList<String> data = new ArrayList<String>();
+            for (int ID : Settings.breakableBlocks) {
+                String name = Settings.IDToMaterialName(ID);
+                if (!name.equalsIgnoreCase("AIR")) {
+                    data.add(name);
+                }
+            }
+            config.set("blocks.breakable", Lists.newArrayList(data));
+
+            // save placeable blocks
+            data = new ArrayList<String>();
+            for (int ID : Settings.placeableBlocks) {
+                String name = Settings.IDToMaterialName(ID);
+                if (!name.equalsIgnoreCase("AIR")) {
+                    data.add(name);
+                }
+            }
+            config.set("blocks.placeable", Lists.newArrayList(data));
+
+            // save non useable blocks
+            data = new ArrayList<String>();
+            for (int ID : Settings.nonUseableBlocks) {
+                String name = Settings.IDToMaterialName(ID);
+                if (!name.equalsIgnoreCase("AIR")) {
+                    data.add(name);
+                }
+            }
+            config.set("blocks.nonUseable", Lists.newArrayList(data));
 
             // save to file
             config.save(Settings.configFile);
@@ -198,6 +235,32 @@ public class Settings {
         } catch (Exception e) {
             e.printStackTrace();
         }
+    }
+
+    private static int StringToMaterialID(String text) {
+        for (Material material : Material.values()) {
+            if (material.name().equalsIgnoreCase(text) || material.name().replace("_", "").equalsIgnoreCase(text)) {
+                return material.getId();
+            }
+        }
+        return Material.AIR.getId();
+    }
+
+    private static String IDToMaterialName(int ID) {
+        Material material = Material.getMaterial(ID);
+        if (material != null) {
+            return material.name();
+        }
+        return "AIR";
+    }
+
+    public static int getNextRefillTime() {
+        if (Settings.currentRefill < 0) {
+            return 0;
+        }
+        int nextTime = Settings.lootRefillTimes.get(Settings.currentRefill);
+        Settings.currentRefill--;
+        return nextTime;
     }
 
     /**
