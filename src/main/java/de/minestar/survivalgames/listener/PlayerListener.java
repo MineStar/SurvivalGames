@@ -3,6 +3,7 @@ package de.minestar.survivalgames.listener;
 import java.util.Iterator;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.entity.CraftEntity;
@@ -14,7 +15,6 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
-import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
@@ -28,6 +28,7 @@ import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
 import org.bukkit.event.player.PlayerRespawnEvent;
 import org.bukkit.event.player.PlayerTeleportEvent;
+import org.bukkit.inventory.ItemStack;
 
 import de.minestar.survivalgames.Core;
 import de.minestar.survivalgames.data.Settings;
@@ -150,18 +151,6 @@ public class PlayerListener implements Listener {
                 return;
             }
         }
-
-        if (event.getEntity().getType().equals(EntityType.PLAYER)) {
-            // get the DamageCause
-            DamageCause cause = event.getCause();
-            // only check, if PVP is not enabled
-            // player got damage by another player, or an entity
-            if (cause.equals(DamageCause.ENTITY_ATTACK) || cause.equals(DamageCause.PROJECTILE) || cause.equals(DamageCause.ENTITY_EXPLOSION)) {
-                event.setDamage(0);
-                event.setCancelled(true);
-                return;
-            }
-        }
     }
 
     @EventHandler
@@ -181,20 +170,18 @@ public class PlayerListener implements Listener {
         // make spectator
         this.playerManager.makeSpectator(playerName);
 
-        // send infomessage
+        event.getEntity().sendMessage(ChatColor.RED + "--------------------------------------------");
+        event.getEntity().sendMessage(ChatColor.RED + "YOU ARE DEAD!");
+        event.getEntity().sendMessage(ChatColor.RED + "--------------------------------------------");
+
+        event.setDeathMessage(null);
+
         if (this.playerManager.getPlayerCount() > 1) {
             Chat.broadcast(ChatColor.DARK_GREEN, "Another one bites the dust...");
             Chat.broadcast(ChatColor.GRAY, this.playerManager.getPlayerCount() + " survivors are still alive!");
-            return;
-        } else if (this.playerManager.hasGameAWinner()) {
-            Chat.broadcast(ChatColor.RED, "The games have ended!");
-            Chat.broadcast(ChatColor.GOLD, "'" + this.playerManager.getWinner() + "' is the winner!");
-            return;
-        } else if (this.playerManager.hasGameADraw()) {
-            Chat.broadcast(ChatColor.RED, "The games have ended!");
-            Chat.broadcast(ChatColor.GOLD, "Noone has survived... :{");
-            return;
         }
+
+        this.gameManager.checkForWinner();
     }
 
     @EventHandler
@@ -288,6 +275,17 @@ public class PlayerListener implements Listener {
         String playerName = player.getName();
         this.playerManager.removeFromPlayerList(playerName);
         this.playerManager.removeFromSpectatorList(playerName);
+
+        ItemStack[] contents = player.getInventory().getContents();
+        for (ItemStack stack : contents) {
+            if (stack != null && !stack.getType().equals(Material.AIR)) {
+                player.getWorld().dropItemNaturally(player.getLocation(), stack);
+            }
+        }
+
+        if (this.gameManager.isInGame()) {
+            this.gameManager.checkForWinner();
+        }
     }
 
     private void playThunderSound(Entity entity) {

@@ -7,8 +7,10 @@ public class StartDeathmatchTask implements Runnable {
 
     @Override
     public void run() {
-        Chat.broadcastInfo("Time for deathmatch!");
-        Core.gameManager.startDeathmatch();
+        if (Core.gameManager.isInGame() && !Core.gameManager.isInDeathmatch()) {
+            Chat.broadcastInfo("Time for deathmatch!");
+            Core.gameManager.startDeathmatch();
+        }
     }
 
 }

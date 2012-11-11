@@ -5,7 +5,6 @@ import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.CreatureSpawnEvent;
 import org.bukkit.event.entity.EntityTargetEvent;
 import org.bukkit.event.entity.EntityTargetLivingEntityEvent;
 
@@ -21,11 +20,6 @@ public class EntityListener implements Listener {
     public EntityListener() {
         this.gameManager = Core.gameManager;
         this.playerManager = Core.playerManager;
-    }
-
-    @EventHandler
-    public void onCreatureSpawn(CreatureSpawnEvent event) {
-        event.setCancelled(true);
     }
 
     private boolean cancelTargetEvent(Entity target) {

@@ -31,6 +31,9 @@ public class PlayerManager {
     }
 
     private void resetPlayer(Player player) {
+        player.setFireTicks(0);
+        player.setLevel(0);
+        player.setExp(0f);
         player.setHealth(20);
         player.setFoodLevel(20);
         player.setGameMode(GameMode.SURVIVAL);
@@ -50,6 +53,15 @@ public class PlayerManager {
     }
 
     public void endGame() {
+        // reset players
+        for (String playerName : this.players) {
+            Player player = Bukkit.getPlayer(playerName);
+            if (player != null && player.isOnline()) {
+                this.resetPlayer(player);
+                player.setAllowFlight(false);
+            }
+        }
+
         // unhide spectators
         this.unhideSpectators();
 

@@ -3,6 +3,8 @@ package de.minestar.survivalgames.manager;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.bukkit.ChatColor;
+
 import de.minestar.survivalgames.Core;
 import de.minestar.survivalgames.data.GameState;
 import de.minestar.survivalgames.data.Settings;
@@ -25,6 +27,7 @@ public class GameManager {
 
     public void onDisable() {
         timer.cancel();
+        timer = new Timer();
     }
 
     public void scheduleDelayedTask(TimerTask task, long delay) {
@@ -46,8 +49,8 @@ public class GameManager {
         } else {
             Chat.broadcastInfo("The games will start in " + Settings.getPreGameTime() + " minute! Prepare!");
         }
-        this.scheduleDelayedTask(new StartGameThread(), Settings.getPreGameTime() * 60 * 1000);
-        this.scheduleDelayedRepeatingTask(new TimerGameStartThread(System.currentTimeMillis() + (Settings.getPreGameTime() * 60 * 1000)), 1000, 1001);
+        this.scheduleDelayedTask(new StartGameThread(), Settings.getPreGameTime() * 1000);
+        this.scheduleDelayedRepeatingTask(new TimerGameStartThread(System.currentTimeMillis() + (Settings.getPreGameTime() * 1000)), 1000, 1001);
     }
 
     public void startGame() {
@@ -59,8 +62,8 @@ public class GameManager {
         } else {
             Chat.broadcastInfo("PVP will be enabled in " + Settings.getPrePVPTime() + " minute!");
         }
-        this.scheduleDelayedTask(new StartPVPThread(), Settings.getPrePVPTime() * 60 * 1000);
-        this.scheduleDelayedRepeatingTask(new TimerPVPStartThread(System.currentTimeMillis() + (Settings.getPrePVPTime() * 60 * 1000)), 1000, 1001);
+        this.scheduleDelayedTask(new StartPVPThread(), Settings.getPrePVPTime() * 1000);
+        this.scheduleDelayedRepeatingTask(new TimerPVPStartThread(System.currentTimeMillis() + (Settings.getPrePVPTime() * 1000)), 1000, 1001);
     }
 
     public void enablePVP() {
@@ -70,8 +73,8 @@ public class GameManager {
         } else {
             Chat.broadcastInfo("Deathmatch will start in " + Settings.getPreDeathmatchTime() + " minute!");
         }
-        this.scheduleDelayedTask(new StartDeathmatchThread(), Settings.getPreDeathmatchTime() * 60 * 1000);
-        this.scheduleDelayedRepeatingTask(new TimerDeathmatchStartThread(System.currentTimeMillis() + (Settings.getPreDeathmatchTime() * 60 * 1000)), 1000, 1001);
+        this.scheduleDelayedTask(new StartDeathmatchThread(), Settings.getPreDeathmatchTime() * 1000);
+        this.scheduleDelayedRepeatingTask(new TimerDeathmatchStartThread(System.currentTimeMillis() + (Settings.getPreDeathmatchTime() * 1000)), 1000, 1001);
     }
 
     public void startDeathmatch() {
@@ -86,8 +89,15 @@ public class GameManager {
         this.onDisable();
     }
 
+    public void stopGame() {
+        Core.lootManager.clearChests();
+        Core.playerManager.endGame();
+        this.gameState = GameState.LOBBY;
+        this.onDisable();
+    }
+
     public boolean isInGame() {
-        return !this.gameState.equals(GameState.LOBBY);
+        return !this.gameState.equals(GameState.LOBBY) && !this.gameState.equals(GameState.END);
     }
 
     public boolean isInPreGame() {
@@ -100,5 +110,24 @@ public class GameManager {
 
     public boolean isPVPEnabled() {
         return this.gameState.equals(GameState.SURVIVAL) || this.gameState.equals(GameState.DEATHMATCH);
+    }
+
+    public void checkForWinner() {
+        // send infomessage
+        if (Core.playerManager.hasGameAWinner()) {
+            Chat.broadcast(ChatColor.RED, "--------------------------------------------");
+            Chat.broadcast(ChatColor.RED, "The games have ended!");
+            Chat.broadcast(ChatColor.GOLD, "'" + Core.playerManager.getWinner() + "' is the winner!");
+            Chat.broadcast(ChatColor.RED, "--------------------------------------------");
+            Core.gameManager.endGame();
+            return;
+        } else if (Core.playerManager.hasGameADraw()) {
+            Chat.broadcast(ChatColor.RED, "--------------------------------------------");
+            Chat.broadcast(ChatColor.RED, "The games have ended!");
+            Chat.broadcast(ChatColor.GOLD, "Noone has survived... :{");
+            Chat.broadcast(ChatColor.RED, "--------------------------------------------");
+            Core.gameManager.endGame();
+            return;
+        }
     }
 }

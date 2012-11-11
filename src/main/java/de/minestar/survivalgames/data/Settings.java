@@ -23,9 +23,9 @@ public class Settings {
     private static PlayerSpawn spectatorSpawn = null, lobbySpawn = null;
     private static File dataFolder, configFile, playerSpawnFile;
 
-    private static int preGameTime = 1;
-    private static int prePVPTime = 2;
-    private static int preDeathmatchTime = 28;
+    private static int preGameTime = 30;
+    private static int prePVPTime = 2 * 60;
+    private static int preDeathmatchTime = 28 * 60;
 
     private static HashSet<Integer> breakableBlocks = new HashSet<Integer>(Arrays.asList(Material.VINE.getId(), Material.MELON.getId(), Material.WHEAT.getId(), Material.BROWN_MUSHROOM.getId(), Material.RED_MUSHROOM.getId(), Material.SUGAR_CANE_BLOCK.getId(), Material.SAPLING.getId()));
     private static HashSet<Integer> placeableBlocks = new HashSet<Integer>(Arrays.asList(Material.VINE.getId(), Material.CAKE_BLOCK.getId(), Material.CAKE.getId(), Material.SAPLING.getId()));

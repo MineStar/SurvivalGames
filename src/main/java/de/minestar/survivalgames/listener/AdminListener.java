@@ -63,6 +63,8 @@ public class AdminListener implements Listener {
             return;
         }
 
+        event.setCancelled(true);
+
         if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
             // save/update the chest
             LootChest chest = this.lootManager.getChest(block.getLocation());
@@ -88,7 +90,6 @@ public class AdminListener implements Listener {
                 event.getPlayer().sendMessage(ChatColor.GREEN + "Chest is now showing lootcontents!");
                 event.getPlayer().sendMessage(ChatColor.GRAY + "NOTE: Every chest of a doublechest needs to be restored manually!");
             }
-            event.setCancelled(true);
         }
     }
 }
