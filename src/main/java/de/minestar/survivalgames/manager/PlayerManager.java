@@ -25,8 +25,7 @@ public class PlayerManager {
         Player[] playerList = Bukkit.getOnlinePlayers();
         this.clearLists();
         for (Player player : playerList) {
-            this.resetPlayer(player);
-            players.add(player.getName());
+            this.makePlayer(player.getName());
         }
         Core.playerManager.teleportAllToGameSpawn();
     }
@@ -73,6 +72,7 @@ public class PlayerManager {
         Player player = Bukkit.getPlayer(playerName);
         if (player != null && player.isOnline()) {
             this.resetPlayer(player);
+            player.setAllowFlight(true);
         }
     }
 
@@ -88,6 +88,12 @@ public class PlayerManager {
         this.showPlayer(playerName);
         this.spectators.remove(playerName);
         this.players.add(playerName);
+
+        Player player = Bukkit.getPlayer(playerName);
+        if (player != null && player.isOnline()) {
+            this.resetPlayer(player);
+            player.setAllowFlight(false);
+        }
     }
 
     public void removeFromPlayerList(String playerName) {

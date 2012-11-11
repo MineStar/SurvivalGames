@@ -64,19 +64,22 @@ public class LootChest {
 
         int itemAmount = 0;
         double randomNumber = this.random.nextDouble();
-        if (randomNumber < 0.1d) {
+        if (randomNumber < 0.15d) {
             itemAmount = 1;
-        } else if (randomNumber < 0.4d) {
+        } else if (randomNumber < 0.52d) {
             itemAmount = 2;
-        } else if (randomNumber < 0.7d) {
+        } else if (randomNumber < 0.72d) {
             itemAmount = 3;
-        } else if (randomNumber < 0.85d) {
+        } else if (randomNumber < 0.83d) {
             itemAmount = 4;
-        } else if (randomNumber <= 0.95d) {
+        } else if (randomNumber <= 0.91d) {
             itemAmount = 5;
-        } else if (randomNumber <= 1.0d) {
+        } else if (randomNumber <= 0.95d) {
             itemAmount = 6;
+        } else {
+            itemAmount = 2;
         }
+
         int done = 0;
         int count = 0;
         while (done < itemAmount && done < this.lootList.size() && count < 10) {

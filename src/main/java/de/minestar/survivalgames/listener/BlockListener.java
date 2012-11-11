@@ -51,7 +51,7 @@ public class BlockListener implements Listener {
 
         // validate blockplace
         Block block = event.getBlockPlaced();
-        if (Settings.isPlaceable(block.getType()) && !Core.playerManager.isPlayer(event.getPlayer().getName())) {
+        if (Settings.isPlaceable(block.getType()) && Core.playerManager.isPlayer(event.getPlayer().getName())) {
             return;
         }
 
@@ -68,7 +68,7 @@ public class BlockListener implements Listener {
 
         // validate blockbreak
         Block block = event.getBlock();
-        if (Settings.isBreakable(block.getType()) && !Core.playerManager.isPlayer(event.getPlayer().getName())) {
+        if (Settings.isBreakable(block.getType()) && Core.playerManager.isPlayer(event.getPlayer().getName())) {
             return;
         }
 
