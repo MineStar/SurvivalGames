@@ -96,7 +96,6 @@ public class LootManager {
         }
         int refillTime = Settings.getNextRefillTime();
         if (refillTime > 0) {
-            // Core.gameManager.scheduleDelayedTask(new LootRefillThread(), (refillTime) * 1000);
             Core.gameManager.scheduleDelayedTask(new LootRefillThread(), (refillTime + (new Random()).nextInt(3)) * 1000);
         }
     }
