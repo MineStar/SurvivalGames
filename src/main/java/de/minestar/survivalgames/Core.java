@@ -29,11 +29,13 @@ import de.minestar.survivalgames.commands.CreateGame_Command;
 import de.minestar.survivalgames.commands.JoinGame_Command;
 import de.minestar.survivalgames.commands.QuitGame_Command;
 import de.minestar.survivalgames.commands.Ready_Command;
+import de.minestar.survivalgames.commands.Scan_Command;
 import de.minestar.survivalgames.commands.SetLobbySpawn_Command;
 import de.minestar.survivalgames.commands.SetPlayerSpawn_Command;
 import de.minestar.survivalgames.commands.SetSpectatorSpawn_Command;
 import de.minestar.survivalgames.commands.StartGame_Command;
 import de.minestar.survivalgames.commands.StopGame_Command;
+import de.minestar.survivalgames.commands.TPLoot_Command;
 import de.minestar.survivalgames.listener.AdminListener;
 import de.minestar.survivalgames.listener.BlockListener;
 import de.minestar.survivalgames.listener.PlayerListener;
@@ -124,6 +126,14 @@ public class Core extends JavaPlugin {
             }
             if (args[0].equalsIgnoreCase("addPlayer")) {
                 new SetPlayerSpawn_Command().execute((Player) sender, args);
+                return true;
+            }
+            if (args[0].equalsIgnoreCase("scan")) {
+                new Scan_Command().execute((Player) sender, args);
+                return true;
+            }
+            if (args[0].equalsIgnoreCase("tpLoot")) {
+                new TPLoot_Command().execute((Player) sender, args);
                 return true;
             }
         } else {

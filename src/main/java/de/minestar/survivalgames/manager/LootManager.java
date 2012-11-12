@@ -11,6 +11,7 @@ import org.bukkit.Location;
 import de.minestar.survivalgames.Core;
 import de.minestar.survivalgames.data.Loot;
 import de.minestar.survivalgames.data.LootChest;
+import de.minestar.survivalgames.data.SurvivalPlayer;
 import de.minestar.survivalgames.utils.Chat;
 import de.minestar.survivalgames.utils.LocationUtils;
 
@@ -88,6 +89,19 @@ public class LootManager {
             }
         }
         return null;
+    }
+
+    public void teleportToChest(int ID, SurvivalPlayer player) {
+        int c = 0;
+        for (LootChest chest : this.chestList) {
+            if (ID == c) {
+                player.teleport(chest.getLocation());
+                player.broadcast(ChatColor.GREEN + "Teleport to Chest #" + ID + " of " + this.chestList.size());
+                return;
+            }
+            c++;
+        }
+        player.broadcast(ChatColor.GREEN + "Chestamount: " + this.chestList.size());
     }
 
     public void refillChests() {

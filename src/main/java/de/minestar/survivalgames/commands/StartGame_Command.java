@@ -23,6 +23,11 @@ public class StartGame_Command {
             return;
         }
 
+        if (!sPlayer.getCurrentGame().isGameInLobby()) {
+            sender.sendMessage(ChatColor.RED + "Game is currently running!");
+            return;
+        }
+
         sender.sendMessage(ChatColor.GREEN + "Executing command \"Start Game\"...");
 
         if (!sPlayer.getCurrentGame().isSetupComplete()) {

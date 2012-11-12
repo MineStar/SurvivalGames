@@ -6,13 +6,22 @@ import org.bukkit.entity.Player;
 import de.minestar.survivalgames.Core;
 import de.minestar.survivalgames.data.SurvivalPlayer;
 
-public class StopGame_Command {
+public class TPLoot_Command {
 
     public void execute(Player sender, String[] args) {
         // check the argumentcount
-        if (args.length != 1) {
+        if (args.length != 2) {
             sender.sendMessage(ChatColor.RED + "Wrong syntax!");
-            sender.sendMessage(ChatColor.GRAY + "/game stop");
+            sender.sendMessage(ChatColor.GRAY + "/game tpLoot <NUMBER>");
+            return;
+        }
+
+        int ID = 0;
+        try {
+            ID = Integer.valueOf(args[1]);
+        } catch (Exception e) {
+            sender.sendMessage(ChatColor.RED + "Wrong syntax!");
+            sender.sendMessage(ChatColor.GRAY + "/game tpLoot <NUMBER>");
             return;
         }
 
@@ -23,12 +32,13 @@ public class StopGame_Command {
             return;
         }
 
-        if (sPlayer.getCurrentGame().isGameInLobby()) {
-            sender.sendMessage(ChatColor.RED + "Game is not running!");
+        if (!sPlayer.getCurrentGame().isGameInLobby()) {
+            sender.sendMessage(ChatColor.RED + "Game is currently running!");
             return;
         }
 
-        sender.sendMessage(ChatColor.GREEN + "Executing command \"End Game\"...");
-        Core.gameManager.stopGame(sPlayer.getCurrentGame().getGameName());
+        // send info
+        sPlayer.getCurrentGame().getLootManager().teleportToChest(ID, sPlayer);
     }
+
 }

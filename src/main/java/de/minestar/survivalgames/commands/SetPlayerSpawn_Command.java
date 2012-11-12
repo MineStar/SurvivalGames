@@ -23,6 +23,12 @@ public class SetPlayerSpawn_Command {
             sender.sendMessage(ChatColor.RED + "You are currently not in a survivalgame!");
             return;
         }
+
+        if (!sPlayer.getCurrentGame().isGameInLobby()) {
+            sender.sendMessage(ChatColor.RED + "Game is currently running!");
+            return;
+        }
+
         sPlayer.getCurrentGame().getSettings().addPlayerSpawn(new PlayerSpawn(-1, sender.getLocation()));
         sender.sendMessage(ChatColor.GREEN + "Player added!");
     }

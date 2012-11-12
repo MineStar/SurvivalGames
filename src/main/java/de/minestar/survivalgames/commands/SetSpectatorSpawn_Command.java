@@ -24,6 +24,11 @@ public class SetSpectatorSpawn_Command {
             return;
         }
 
+        if (!sPlayer.getCurrentGame().isGameInLobby()) {
+            sender.sendMessage(ChatColor.RED + "Game is currently running!");
+            return;
+        }
+
         sPlayer.getCurrentGame().getSettings().setSpectatorSpawn(new PlayerSpawn(-1, sender.getLocation()));
         sPlayer.getCurrentGame().getSettings().savePlayerSpawns();
         sender.sendMessage(ChatColor.GREEN + "Spectatorspawn set!");

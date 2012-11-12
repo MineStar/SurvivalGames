@@ -24,6 +24,11 @@ public class SetLobbySpawn_Command {
             return;
         }
 
+        if (!sPlayer.getCurrentGame().isGameInLobby()) {
+            sender.sendMessage(ChatColor.RED + "Game is currently running!");
+            return;
+        }
+
         sPlayer.getCurrentGame().getSettings().setLobbySpawn(new PlayerSpawn(-1, sender.getLocation()));
         sPlayer.getCurrentGame().getSettings().savePlayerSpawns();
         sender.sendMessage(ChatColor.GREEN + "Lobbyspawn set!");

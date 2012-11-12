@@ -2,6 +2,7 @@ package de.minestar.survivalgames.data;
 
 import org.bukkit.Bukkit;
 import org.bukkit.GameMode;
+import org.bukkit.Location;
 import org.bukkit.entity.Player;
 
 public class SurvivalPlayer implements Comparable<SurvivalPlayer> {
@@ -120,6 +121,14 @@ public class SurvivalPlayer implements Comparable<SurvivalPlayer> {
 
         // teleport
         this.bukkitPlayer.teleport(playerSpawn.getLocation());
+    }
+
+    public void teleport(Location location) {
+        // we need a valid bukkitplayer
+        this.checkBukkitPlayer();
+
+        // teleport
+        this.bukkitPlayer.teleport(location);
     }
 
     public void updateBukkitPlayer() {
