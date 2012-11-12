@@ -5,3 +5,6 @@ commands:
     game:
         description: SurvivalGames-Related commands
         usage: /game <cmd 1> ... <cmd n>
+    ready:
+        description: SurvivalGames-Related commands
+        usage: /ready

@@ -59,6 +59,7 @@ public class BlockListener implements Listener {
         // validate blockplace
         Block block = event.getBlockPlaced();
         if (sPlayer.getCurrentGame().getSettings().isPlaceable(block.getType()) && sPlayer.isPlayer()) {
+            sPlayer.getCurrentGame().addBlockUpdate(event.getBlock().getLocation());
             return;
         }
 
@@ -77,6 +78,7 @@ public class BlockListener implements Listener {
         // validate blockbreak
         Block block = event.getBlock();
         if (sPlayer.getCurrentGame().getSettings().isBreakable(block.getType()) && sPlayer.isPlayer()) {
+            sPlayer.getCurrentGame().addBlockUpdate(event.getBlock().getLocation());
             return;
         }
 

@@ -83,12 +83,20 @@ public class PlayerListener implements Listener {
             while (iteratorPlayer.hasNext()) {
                 Player otherPlayer = iteratorPlayer.next();
                 SurvivalPlayer otherSPlayer = this.gameManager.getPlayer(otherPlayer.getName());
-                if (otherSPlayer.isPlayer()) {
+                if (otherSPlayer == null || otherSPlayer.isPlayer() || !otherSPlayer.getCurrentGame().equals(sPlayer.getCurrentGame())) {
                     iteratorPlayer.remove();
                 }
             }
         } else {
             event.setMessage(ChatColor.AQUA + playerName + ": " + ChatColor.WHITE + event.getMessage());
+            Iterator<Player> iteratorPlayer = event.getRecipients().iterator();
+            while (iteratorPlayer.hasNext()) {
+                Player otherPlayer = iteratorPlayer.next();
+                SurvivalPlayer otherSPlayer = this.gameManager.getPlayer(otherPlayer.getName());
+                if (otherSPlayer == null || !otherSPlayer.getCurrentGame().equals(sPlayer.getCurrentGame())) {
+                    iteratorPlayer.remove();
+                }
+            }
         }
     }
 
@@ -102,11 +110,12 @@ public class PlayerListener implements Listener {
 
         // only ops!
         if (!event.getPlayer().isOp()) {
-            event.setCancelled(true);
+            if (!event.getMessage().startsWith("/game ")) {
+                event.setCancelled(true);
+            }
         }
     }
 
-    @EventHandler(ignoreCancelled = true)
     public void onPlayerInteract(PlayerInteractEvent event) {
         // get the player
         SurvivalPlayer sPlayer = this.gameManager.getPlayer(event.getPlayer().getName());
@@ -125,6 +134,9 @@ public class PlayerListener implements Listener {
 
         // get the block
         Block block = event.getClickedBlock();
+        if (event.getClickedBlock() == null) {
+            return;
+        }
 
         // check interaction
         if (sPlayer.getCurrentGame().getSettings().isNonUseable(block.getType()) || sPlayer.isSpectator()) {
@@ -132,6 +144,8 @@ public class PlayerListener implements Listener {
             event.setUseItemInHand(Result.DENY);
             event.setCancelled(true);
             return;
+        } else {
+            sPlayer.getCurrentGame().addBlockUpdate(event.getClickedBlock().getLocation());
         }
     }
 
@@ -230,6 +244,8 @@ public class PlayerListener implements Listener {
 
         // remove deathmessage
         event.setDeathMessage(null);
+        event.getEntity().getPlayer().setHealth(20);
+        event.getEntity().getPlayer().setFoodLevel(20);
 
         // update game
         sPlayer.getCurrentGame().onPlayerDeath(sPlayer);
@@ -331,6 +347,9 @@ public class PlayerListener implements Listener {
             event.setCancelled(true);
             return;
         }
+
+        // add itemdrop
+        sPlayer.getCurrentGame().addItemUpdate(event.getItemDrop());
     }
 
     private void playThunderSound(Entity entity) {

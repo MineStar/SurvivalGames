@@ -28,6 +28,7 @@ import org.bukkit.plugin.java.JavaPlugin;
 import de.minestar.survivalgames.commands.CreateGame_Command;
 import de.minestar.survivalgames.commands.JoinGame_Command;
 import de.minestar.survivalgames.commands.QuitGame_Command;
+import de.minestar.survivalgames.commands.Ready_Command;
 import de.minestar.survivalgames.commands.SetLobbySpawn_Command;
 import de.minestar.survivalgames.commands.SetPlayerSpawn_Command;
 import de.minestar.survivalgames.commands.SetSpectatorSpawn_Command;
@@ -81,8 +82,14 @@ public class Core extends JavaPlugin {
 
     @Override
     public boolean onCommand(CommandSender sender, Command command, String label, String[] args) {
-        if (!sender.isOp()) {
+        if (label.contains("game") && !sender.isOp()) {
             sender.sendMessage(ChatColor.RED + "You are not allowed to use this command!");
+            return true;
+        }
+
+        // get the player
+        if (label.contains("ready")) {
+            new Ready_Command().execute((Player) sender, args);
             return true;
         }
 

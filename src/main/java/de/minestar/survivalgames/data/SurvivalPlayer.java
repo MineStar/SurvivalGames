@@ -8,6 +8,7 @@ public class SurvivalPlayer implements Comparable<SurvivalPlayer> {
 
     private final String playerName;
     private boolean isPlayer = false;
+    private boolean isReady = false;
     private Player bukkitPlayer;
     private final SurvivalGame currentGame;
 
@@ -16,6 +17,19 @@ public class SurvivalPlayer implements Comparable<SurvivalPlayer> {
         this.currentGame = currentGame;
         this.updateBukkitPlayer();
         this.makeSpectator();
+    }
+
+    public void setReady(boolean isReady) {
+        this.isReady = isReady;
+    }
+
+    public boolean toggleReady() {
+        this.isReady = !this.isReady;
+        return this.isReady;
+    }
+
+    public boolean isReady() {
+        return isReady;
     }
 
     public boolean isPlayer() {

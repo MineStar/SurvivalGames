@@ -135,7 +135,6 @@ public class GameManager {
         if (player.getCurrentGame().quitGame(playerName)) {
             this.playerList.remove(playerName);
             player.getCurrentGame().broadcast(ChatColor.GRAY + "'" + playerName + "' has left the survivalgame!");
-            System.out.println("player quit game");
             return true;
         }
 

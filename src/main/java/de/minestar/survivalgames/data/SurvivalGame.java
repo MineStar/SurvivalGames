@@ -2,10 +2,14 @@ package de.minestar.survivalgames.data;
 
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Random;
 
 import org.bukkit.ChatColor;
+import org.bukkit.Location;
+import org.bukkit.entity.Item;
 
+import de.minestar.survivalgames.Core;
 import de.minestar.survivalgames.manager.LootManager;
 import de.minestar.survivalgames.manager.Scheduler;
 import de.minestar.survivalgames.threads.LootRefillThread;
@@ -32,6 +36,9 @@ public class SurvivalGame {
     private LootManager lootManager;
     private Scheduler scheduler;
 
+    private ArrayList<Item> droppedItems = new ArrayList<Item>();
+    private HashSet<BlockVector> changedBlocks = new HashSet<BlockVector>();
+
     public SurvivalGame(String gameName) {
         this.gameName = gameName;
         this.scheduler = new Scheduler();
@@ -56,12 +63,7 @@ public class SurvivalGame {
         this.teleportAllToLobbySpawn();
         this.showAllPlayers();
         this.resetPlayers();
-    }
-
-    private void resetPlayers() {
-        for (SurvivalPlayer player : this.completePlayerList.values()) {
-            player.resetPlayer();
-        }
+        this.resetArea();
     }
 
     public void goToPreGame() {
@@ -71,6 +73,7 @@ public class SurvivalGame {
         for (SurvivalPlayer player : this.completePlayerList.values()) {
             player.makePlayer();
             player.resetPlayer();
+            player.setReady(false);
         }
 
         // teleport everyone to the gamespawn
@@ -86,7 +89,7 @@ public class SurvivalGame {
         // this.settings.getSpectatorSpawn().getLocation().getWorld().setStorm(false);
 
         // print info
-        this.broadcastInfo("The games will start in " + Chat.secondsToMinutes(this.settings.getPreGameTime()) + "! Prepare!");
+        this.broadcastInfo("The game will start in " + Chat.secondsToMinutes(this.settings.getPreGameTime()) + "! Prepare!");
     }
 
     public void goToPrePVP() {
@@ -157,11 +160,93 @@ public class SurvivalGame {
         this.lootManager.clearChests();
     }
 
+    public void addItemUpdate(Item item) {
+        this.droppedItems.add(item);
+    }
+
+    public void addBlockUpdate(Location location) {
+        BlockVector vector = new BlockVector(location);
+        if (this.changedBlocks.contains(vector)) {
+            return;
+        } else {
+            this.changedBlocks.add(vector);
+        }
+    }
+
     // /////////////////////////////////////////////////////////
     //
     // Methods for gamecontrol
     //
     // /////////////////////////////////////////////////////////
+
+    private void resetArea() {
+        // broadcast info
+        this.broadcast(ChatColor.RED, "Resetting items...");
+
+        // reset items
+        for (Item item : this.droppedItems) {
+            item.getWorld().loadChunk(item.getLocation().getChunk());
+            if (item != null && !item.isDead() && item.isValid()) {
+                item.remove();
+            }
+        }
+
+        // broadcast info
+        this.broadcast(ChatColor.RED, "Resetting blocks...");
+
+        // reset blocks
+        for (BlockVector vector : this.changedBlocks) {
+            vector.getLocation().getWorld().getBlockAt(vector.getLocation()).setTypeIdAndData(vector.getTypeID(), vector.getSubData(), false);
+        }
+
+        // clear lists
+        this.droppedItems.clear();
+        this.changedBlocks.clear();
+
+        // broadcast info
+        this.broadcast(ChatColor.GREEN, "Reset done!");
+    }
+
+    public void togglePlayerReady(SurvivalPlayer player) {
+        if (player.toggleReady()) {
+            this.broadcast(ChatColor.GRAY, "'" + player.getPlayerName() + "' is ready...");
+        } else {
+            this.broadcast(ChatColor.GRAY, "'" + player.getPlayerName() + "' is no longer ready...");
+        }
+
+        this.checkForAllReady();
+    }
+
+    private void checkForAllReady() {
+        int ready = 0;
+        for (SurvivalPlayer player : this.completePlayerList.values()) {
+            if (player.isReady()) {
+                ready++;
+            }
+        }
+
+        if (ready == this.completePlayerList.size()) {
+            if (!this.isSetupComplete()) {
+                this.broadcast(ChatColor.RED + "Gamesetup is incomplete!");
+                return;
+            }
+
+            if (ready < 2) {
+                this.broadcast(ChatColor.RED + "At least two players are needed!");
+                return;
+            }
+
+            Core.gameManager.startGame(this.getGameName());
+        } else {
+            this.broadcast(ChatColor.DARK_GRAY, ready + " of " + this.completePlayerList.size() + " players are ready!");
+        }
+    }
+
+    private void resetPlayers() {
+        for (SurvivalPlayer player : this.completePlayerList.values()) {
+            player.resetPlayer();
+        }
+    }
 
     public void refillLoot() {
         this.lootManager.refillChests();
@@ -280,6 +365,11 @@ public class SurvivalGame {
         // teleport
         Random random = new Random();
         for (SurvivalPlayer player : this.completePlayerList.values()) {
+            if (unusedSpawns.size() == 0) {
+                for (PlayerSpawn spawn : this.settings.getPlayerSpawns()) {
+                    unusedSpawns.add(spawn);
+                }
+            }
             if (player.isPlayer()) {
                 // player = teleport to random spawnpoint
                 int index = (int) (random.nextDouble() * unusedSpawns.size());
