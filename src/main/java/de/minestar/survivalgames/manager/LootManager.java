@@ -4,7 +4,6 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.util.ArrayList;
-import java.util.Random;
 
 import org.bukkit.ChatColor;
 import org.bukkit.Location;
@@ -12,22 +11,27 @@ import org.bukkit.Location;
 import de.minestar.survivalgames.Core;
 import de.minestar.survivalgames.data.Loot;
 import de.minestar.survivalgames.data.LootChest;
-import de.minestar.survivalgames.data.Settings;
-import de.minestar.survivalgames.threads.LootRefillThread;
 import de.minestar.survivalgames.utils.Chat;
 import de.minestar.survivalgames.utils.LocationUtils;
 
 public class LootManager {
 
     private ArrayList<LootChest> chestList;
+    private File dataFolder;
 
-    public void onEnable() {
+    public LootManager(String gameName) {
+        this.dataFolder = new File(Core.INSTANCE.getDataFolder() + System.getProperty("file.separator") + gameName);
+        this.dataFolder.mkdir();
+
+        this.dataFolder = new File(this.dataFolder + System.getProperty("file.separator") + "loot");
+        this.dataFolder.mkdir();
+
         this.chestList = new ArrayList<LootChest>();
         this.loadChests();
     }
 
     private void loadChests() {
-        File[] files = new File(Core.INSTANCE.getDataFolder() + System.getProperty("file.separator") + "loot").listFiles();
+        File[] files = this.dataFolder.listFiles();
         int itemCount = 0;
         for (File f : files) {
             try {
@@ -60,7 +64,7 @@ public class LootManager {
                         lootList.add(new Loot(typeID, subID, amount));
                         itemCount++;
                     }
-                    this.chestList.add(new LootChest(location, lootList));
+                    this.chestList.add(new LootChest(this.dataFolder, location, lootList));
                     reader.close();
                 }
             } catch (Exception e) {
@@ -70,15 +74,11 @@ public class LootManager {
         Chat.printMessage(ChatColor.GREEN, "Loaded " + this.chestList.size() + " chests with " + itemCount + " items!");
     }
 
-    public void startGame() {
-        this.refillChests();
-    }
-
     public void addChest(Location location) {
         if (this.getChest(location) != null) {
             return;
         }
-        this.chestList.add(new LootChest(location, new ArrayList<Loot>()));
+        this.chestList.add(new LootChest(this.dataFolder, location, new ArrayList<Loot>()));
     }
 
     public LootChest getChest(Location location) {
@@ -93,10 +93,6 @@ public class LootManager {
     public void refillChests() {
         for (LootChest chest : this.chestList) {
             chest.refill();
-        }
-        int refillTime = Settings.getNextRefillTime();
-        if (refillTime > 0) {
-            Core.gameManager.scheduleDelayedTask(new LootRefillThread(), (refillTime + (new Random()).nextInt(3)) * 1000);
         }
     }
 

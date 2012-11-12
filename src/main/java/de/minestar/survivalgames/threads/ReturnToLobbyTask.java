@@ -4,22 +4,21 @@ import org.bukkit.ChatColor;
 
 import de.minestar.survivalgames.data.SurvivalGame;
 
-public class StartGameTask implements Runnable {
+public class ReturnToLobbyTask implements Runnable {
 
     private final SurvivalGame game;
 
-    public StartGameTask(SurvivalGame game) {
+    public ReturnToLobbyTask(SurvivalGame game) {
         this.game = game;
     }
 
     @Override
     public void run() {
-        if (this.game.isGameInPreGame()) {
+        if (this.game.isGameInEnd()) {
             this.game.broadcast(ChatColor.RED + SurvivalGame.LIMITER);
-            this.game.broadcastInfo("The game has started!");
+            this.game.broadcastInfo("Welcome to the lobby!");
             this.game.broadcast(ChatColor.RED + SurvivalGame.LIMITER);
-            this.game.goToPrePVP();
+            this.game.goToLobby();
         }
     }
-
 }

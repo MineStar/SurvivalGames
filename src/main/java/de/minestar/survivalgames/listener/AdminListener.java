@@ -3,6 +3,7 @@ package de.minestar.survivalgames.listener;
 import org.bukkit.ChatColor;
 import org.bukkit.Material;
 import org.bukkit.block.Block;
+import org.bukkit.block.Chest;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
@@ -11,28 +12,27 @@ import org.bukkit.inventory.ItemStack;
 
 import de.minestar.survivalgames.Core;
 import de.minestar.survivalgames.data.LootChest;
+import de.minestar.survivalgames.data.SurvivalPlayer;
 import de.minestar.survivalgames.manager.GameManager;
-import de.minestar.survivalgames.manager.LootManager;
 
 public class AdminListener implements Listener {
 
-    private LootManager lootManager;
     private GameManager gameManager;
 
     public AdminListener() {
-        this.lootManager = Core.lootManager;
         this.gameManager = Core.gameManager;
     }
 
     @EventHandler
     public void onPlayerInteract(PlayerInteractEvent event) {
-        // only if there is no game
-        if (this.gameManager.isInGame()) {
+        // only check OPs
+        if (!event.getPlayer().isOp()) {
             return;
         }
 
-        // only ops are allowed
-        if (!event.getPlayer().isOp()) {
+        // get the player
+        SurvivalPlayer sPlayer = this.gameManager.getPlayer(event.getPlayer().getName());
+        if (sPlayer == null) {
             return;
         }
 
@@ -44,52 +44,59 @@ public class AdminListener implements Listener {
         // get the block
         Block block = event.getClickedBlock();
 
-        // only chest interaction
-        if (!block.getType().equals(Material.CHEST)) {
-            return;
-        }
+        // handle chest interaction
+        if (block.getType().equals(Material.CHEST)) {
+            // cancel the event
+            event.setCancelled(true);
 
-        // we need a bedrock in the hand
-        ItemStack stack = event.getPlayer().getItemInHand();
-        if (stack == null || !stack.getType().equals(Material.BEDROCK)) {
-            if (stack.getType().equals(Material.BOOKSHELF)) {
-                LootChest chest = this.lootManager.getChest(block.getLocation());
+            // we need a bedrock in the hand
+            ItemStack stack = event.getPlayer().getItemInHand();
+            if (stack == null || !stack.getType().equals(Material.BEDROCK)) {
+                if (stack.getType().equals(Material.BOOKSHELF)) {
+                    LootChest chest = sPlayer.getCurrentGame().getLootManager().getChest(block.getLocation());
+                    if (chest != null) {
+                        chest.refill();
+                        event.getPlayer().sendMessage(ChatColor.GREEN + "Chest refilled!");
+                        event.getPlayer().sendMessage(ChatColor.GRAY + "NOTE: Every chest of a doublechest needs to be refilled!");
+
+                        return;
+                    }
+                }
+                // open the blockinventory
+                event.getPlayer().openInventory(((Chest) block.getState()).getBlockInventory());
+                return;
+            }
+
+            if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
+                // save/update the chest
+                LootChest chest = sPlayer.getCurrentGame().getLootManager().getChest(block.getLocation());
                 if (chest != null) {
-                    chest.refill();
-                    event.getPlayer().sendMessage(ChatColor.GREEN + "Chest refilled!");
-                    event.getPlayer().sendMessage(ChatColor.GRAY + "NOTE: Every chest of a doublechest needs to be refilled!");
+                    chest.updateLootContents();
+                    chest.saveChest();
+                    event.getPlayer().sendMessage(ChatColor.GREEN + "Chest updated!");
+                    event.getPlayer().sendMessage(ChatColor.GRAY + "NOTE: Every chest of a doublechest needs to be updated!");
+                    // cancel the event
+                    return;
+                } else {
+                    sPlayer.getCurrentGame().getLootManager().addChest(block.getLocation());
+                    chest = sPlayer.getCurrentGame().getLootManager().getChest(block.getLocation());
+                    chest.updateLootContents();
+                    chest.saveChest();
+                    event.getPlayer().sendMessage(ChatColor.GREEN + "Chest created!");
+                    event.getPlayer().sendMessage(ChatColor.GRAY + "NOTE: Every chest of a doublechest needs to be saved!");
+                    // cancel the event
+                    return;
+                }
+            } else {
+                LootChest chest = sPlayer.getCurrentGame().getLootManager().getChest(block.getLocation());
+                if (chest != null) {
+                    chest.showLoot();
+                    event.getPlayer().sendMessage(ChatColor.GREEN + "Chest is now showing lootcontents!");
+                    event.getPlayer().sendMessage(ChatColor.GRAY + "NOTE: Every chest of a doublechest needs to be restored manually!");
+                    // cancel the event
                 }
             }
-            return;
         }
 
-        event.setCancelled(true);
-
-        if (event.getAction().equals(Action.RIGHT_CLICK_BLOCK)) {
-            // save/update the chest
-            LootChest chest = this.lootManager.getChest(block.getLocation());
-            if (chest != null) {
-                chest.updateLootContents();
-                chest.saveChest();
-                event.getPlayer().sendMessage(ChatColor.GREEN + "Chest updated!");
-                event.getPlayer().sendMessage(ChatColor.GRAY + "NOTE: Every chest of a doublechest needs to be updated!");
-                return;
-            } else {
-                this.lootManager.addChest(block.getLocation());
-                chest = this.lootManager.getChest(block.getLocation());
-                chest.updateLootContents();
-                chest.saveChest();
-                event.getPlayer().sendMessage(ChatColor.GREEN + "Chest created!");
-                event.getPlayer().sendMessage(ChatColor.GRAY + "NOTE: Every chest of a doublechest needs to be saved!");
-                return;
-            }
-        } else {
-            LootChest chest = this.lootManager.getChest(block.getLocation());
-            if (chest != null) {
-                chest.showLoot();
-                event.getPlayer().sendMessage(ChatColor.GREEN + "Chest is now showing lootcontents!");
-                event.getPlayer().sendMessage(ChatColor.GRAY + "NOTE: Every chest of a doublechest needs to be restored manually!");
-            }
-        }
     }
 }

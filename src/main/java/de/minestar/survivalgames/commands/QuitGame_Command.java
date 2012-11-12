@@ -6,13 +6,13 @@ import org.bukkit.entity.Player;
 import de.minestar.survivalgames.Core;
 import de.minestar.survivalgames.data.SurvivalPlayer;
 
-public class StopGame_Command {
+public class QuitGame_Command {
 
     public void execute(Player sender, String[] args) {
         // check the argumentcount
         if (args.length != 1) {
             sender.sendMessage(ChatColor.RED + "Wrong syntax!");
-            sender.sendMessage(ChatColor.GRAY + "/game stop");
+            sender.sendMessage(ChatColor.GRAY + "/game quit");
             return;
         }
 
@@ -23,7 +23,8 @@ public class StopGame_Command {
             return;
         }
 
-        sender.sendMessage(ChatColor.GREEN + "Executing command \"End Game\"...");
-        Core.gameManager.stopGame(sPlayer.getCurrentGame().getGameName());
+        // quit the game
+        Core.gameManager.playerQuitGame(sPlayer.getPlayerName());
+        sender.sendMessage(ChatColor.GREEN + "You have left the game.");
     }
 }

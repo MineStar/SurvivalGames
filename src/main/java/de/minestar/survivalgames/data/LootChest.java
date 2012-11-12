@@ -11,16 +11,17 @@ import org.bukkit.Material;
 import org.bukkit.block.Chest;
 import org.bukkit.inventory.ItemStack;
 
-import de.minestar.survivalgames.Core;
 import de.minestar.survivalgames.utils.LocationUtils;
 
 public class LootChest {
 
     private final Location location;
     private ArrayList<Loot> lootList = new ArrayList<Loot>();
+    private final File dataFolder;
     private Random random = new Random();
 
-    public LootChest(Location location, ArrayList<Loot> lootList) {
+    public LootChest(File dataFolder, Location location, ArrayList<Loot> lootList) {
+        this.dataFolder = dataFolder;
         this.location = location;
         this.lootList = lootList;
     }
@@ -130,7 +131,7 @@ public class LootChest {
     }
 
     public void saveChest() {
-        File file = new File(Core.INSTANCE.getDataFolder() + System.getProperty("file.separator") + "loot", LocationUtils.toString(this.location) + ".txt");
+        File file = new File(this.dataFolder, LocationUtils.toString(this.location) + ".txt");
         file.mkdir();
         if (file.exists()) {
             file.delete();

@@ -7,6 +7,7 @@ import org.bukkit.Material;
 import org.bukkit.block.Block;
 import org.bukkit.craftbukkit.CraftWorld;
 import org.bukkit.craftbukkit.entity.CraftEntity;
+import org.bukkit.entity.Arrow;
 import org.bukkit.entity.Entity;
 import org.bukkit.entity.EntityType;
 import org.bukkit.entity.Player;
@@ -15,98 +16,109 @@ import org.bukkit.event.EventHandler;
 import org.bukkit.event.Listener;
 import org.bukkit.event.block.Action;
 import org.bukkit.event.entity.EntityDamageByEntityEvent;
+import org.bukkit.event.entity.EntityDamageEvent.DamageCause;
 import org.bukkit.event.entity.FoodLevelChangeEvent;
 import org.bukkit.event.entity.PlayerDeathEvent;
 import org.bukkit.event.player.AsyncPlayerChatEvent;
 import org.bukkit.event.player.PlayerCommandPreprocessEvent;
 import org.bukkit.event.player.PlayerDropItemEvent;
 import org.bukkit.event.player.PlayerInteractEvent;
-import org.bukkit.event.player.PlayerJoinEvent;
 import org.bukkit.event.player.PlayerKickEvent;
 import org.bukkit.event.player.PlayerMoveEvent;
 import org.bukkit.event.player.PlayerPickupItemEvent;
 import org.bukkit.event.player.PlayerQuitEvent;
-import org.bukkit.event.player.PlayerRespawnEvent;
-import org.bukkit.event.player.PlayerTeleportEvent;
 import org.bukkit.inventory.ItemStack;
 
 import de.minestar.survivalgames.Core;
-import de.minestar.survivalgames.data.Settings;
+import de.minestar.survivalgames.data.SurvivalGame;
+import de.minestar.survivalgames.data.SurvivalPlayer;
 import de.minestar.survivalgames.manager.GameManager;
-import de.minestar.survivalgames.manager.PlayerManager;
-import de.minestar.survivalgames.utils.Chat;
 import de.minestar.survivalgames.utils.LocationUtils;
 
 public class PlayerListener implements Listener {
 
     private GameManager gameManager;
-    private PlayerManager playerManager;
 
     public PlayerListener() {
         this.gameManager = Core.gameManager;
-        this.playerManager = Core.playerManager;
     }
 
     public void onEnable() {
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onPlayerMove(PlayerMoveEvent event) {
-        // only affect this, if the game is not in pregame, of if the player is a spectator
-        if (!this.gameManager.isInPreGame() || this.playerManager.isSpectator(event.getPlayer().getName())) {
+        // only on blockchanges
+        if (LocationUtils.equalsXZ(event.getFrom(), event.getTo())) {
             return;
         }
 
-        // don't move
-        if (!LocationUtils.equals(event.getFrom(), event.getTo())) {
+        // get the player
+        SurvivalPlayer sPlayer = this.gameManager.getPlayer(event.getPlayer().getName());
+        if (sPlayer == null) {
+            return;
+        }
+
+        // only affect this, if the game is not in pregame, of if the player is a spectator
+        if (sPlayer.getCurrentGame().isGameInPreGame() && sPlayer.isPlayer()) {
             event.setTo(event.getFrom());
         }
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onPlayerChat(AsyncPlayerChatEvent event) {
-        if (!this.gameManager.isInGame()) {
+        // get the player
+        SurvivalPlayer sPlayer = this.gameManager.getPlayer(event.getPlayer().getName());
+        if (sPlayer == null) {
             return;
         }
 
         String playerName = event.getPlayer().getName();
-        // players can not read what spectators are writing
 
+        // players can not read what spectators are writing
         event.setFormat("%2$s");
-        if (this.playerManager.isSpectator(playerName)) {
-            event.setMessage(ChatColor.DARK_RED + "(SPEC) " + ChatColor.DARK_BLUE + playerName + ": " + ChatColor.GRAY + event.getMessage());
+        if (sPlayer.isSpectator()) {
+            event.setMessage(ChatColor.DARK_RED + "(SPEC) " + ChatColor.LIGHT_PURPLE + playerName + ": " + ChatColor.WHITE + event.getMessage());
             Iterator<Player> iteratorPlayer = event.getRecipients().iterator();
             while (iteratorPlayer.hasNext()) {
                 Player otherPlayer = iteratorPlayer.next();
-                if (this.playerManager.isPlayer(otherPlayer.getName())) {
+                SurvivalPlayer otherSPlayer = this.gameManager.getPlayer(otherPlayer.getName());
+                if (otherSPlayer.isPlayer()) {
                     iteratorPlayer.remove();
                 }
             }
         } else {
-            event.setMessage(ChatColor.AQUA + playerName + ": " + ChatColor.GRAY + event.getMessage());
+            event.setMessage(ChatColor.AQUA + playerName + ": " + ChatColor.WHITE + event.getMessage());
         }
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onPlayerCommand(PlayerCommandPreprocessEvent event) {
-        if (!this.gameManager.isInGame()) {
+        // get the player
+        SurvivalPlayer sPlayer = this.gameManager.getPlayer(event.getPlayer().getName());
+        if (sPlayer == null) {
             return;
         }
 
         // only ops!
-        if (event.getPlayer().isOp()) {
-            return;
+        if (!event.getPlayer().isOp()) {
+            event.setCancelled(true);
         }
-        event.setCancelled(true);
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onPlayerInteract(PlayerInteractEvent event) {
-        if (!this.gameManager.isInGame()) {
+        // get the player
+        SurvivalPlayer sPlayer = this.gameManager.getPlayer(event.getPlayer().getName());
+        if (sPlayer == null) {
             return;
         }
 
-        // only right clicks on a block
+        if (sPlayer.getCurrentGame().isGameInLobby()) {
+            return;
+        }
+
+        // only left & right clicks on a block
         if (!event.getAction().equals(Action.RIGHT_CLICK_BLOCK) && !event.getAction().equals(Action.LEFT_CLICK_BLOCK)) {
             return;
         }
@@ -115,7 +127,7 @@ public class PlayerListener implements Listener {
         Block block = event.getClickedBlock();
 
         // check interaction
-        if (Settings.isNonUseable(block.getType()) || Core.playerManager.isSpectator(event.getPlayer().getName())) {
+        if (sPlayer.getCurrentGame().getSettings().isNonUseable(block.getType()) || sPlayer.isSpectator()) {
             event.setUseInteractedBlock(Result.DENY);
             event.setUseItemInHand(Result.DENY);
             event.setCancelled(true);
@@ -123,44 +135,84 @@ public class PlayerListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onPlayerDamage(EntityDamageByEntityEvent event) {
-        // no damage, if there is no game
-        if (!this.gameManager.isInGame() || this.gameManager.isInPreGame() || !this.gameManager.isPVPEnabled()) {
-            event.setDamage(0);
-            event.setCancelled(true);
+
+        // get the players
+        Player attacker = null, defender = null;
+        SurvivalPlayer sAttacker = null, sDefender = null;
+
+        if (event.getDamager().getType().equals(EntityType.PLAYER)) {
+            attacker = (Player) event.getDamager();
+            sAttacker = this.gameManager.getPlayer(attacker.getName());
+        }
+
+        if (event.getDamager().getType().equals(EntityType.ARROW)) {
+            Arrow arrow = (Arrow) event.getDamager();
+            if (arrow.getShooter().getType().equals(EntityType.PLAYER)) {
+                attacker = (Player) arrow.getShooter();
+                sAttacker = this.gameManager.getPlayer(attacker.getName());
+            }
+        }
+
+        if (event.getEntity().getType().equals(EntityType.PLAYER)) {
+            defender = (Player) event.getEntity();
+            sDefender = this.gameManager.getPlayer(defender.getName());
+        }
+
+        // only handle, if we have at least one player
+        if (attacker == null && defender == null) {
             return;
         }
 
-        // block damage by spectators
-        if (event.getDamager().getType().equals(EntityType.PLAYER)) {
-            Player attacker = (Player) event.getDamager();
-            if (this.playerManager.isSpectator(attacker.getName())) {
+        // attacker : player
+        // defender : null (this means a mob)
+        if (sAttacker != null && sDefender == null) {
+            if (!sAttacker.getCurrentGame().isGameInSurvival() && !sAttacker.getCurrentGame().isGameInDeathmatch()) {
                 event.setDamage(0);
                 event.setCancelled(true);
-                return;
             }
+            return;
         }
 
-        // block damage for spectators
-        if (event.getEntity().getType().equals(EntityType.PLAYER)) {
-            Player defender = (Player) event.getEntity();
-            if (this.playerManager.isSpectator(defender.getName())) {
+        // attacker : null (projectile, entity, or other things)
+        // defender : player
+        if (sAttacker == null && sDefender != null) {
+            if (!sDefender.getCurrentGame().isGameInSurvival() && !sDefender.getCurrentGame().isGameInDeathmatch()) {
+                if (event.getCause().equals(DamageCause.POISON) || event.getCause().equals(DamageCause.PROJECTILE) || event.getCause().equals(DamageCause.MAGIC) || event.getCause().equals(DamageCause.ENTITY_ATTACK)) {
+                    event.setDamage(0);
+                    event.setCancelled(true);
+                }
+            }
+            return;
+        }
+
+        // attacker : player
+        // defender : player
+        if (sAttacker != null && sDefender != null) {
+            if (!sAttacker.getCurrentGame().equals(sDefender.getCurrentGame())) {
                 event.setDamage(0);
                 event.setCancelled(true);
-                return;
             }
+            if (!sAttacker.getCurrentGame().isGameInSurvival() && !sAttacker.getCurrentGame().isGameInDeathmatch()) {
+                event.setDamage(0);
+                event.setCancelled(true);
+            }
+            return;
         }
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onPlayerDeath(PlayerDeathEvent event) {
-        if (!this.gameManager.isInGame()) {
+        // get the player
+        String playerName = event.getEntity().getPlayer().getName();
+        SurvivalPlayer sPlayer = this.gameManager.getPlayer(playerName);
+        if (sPlayer == null) {
             return;
         }
 
-        String playerName = event.getEntity().getPlayer().getName();
-        if (!this.playerManager.isPlayer(playerName)) {
+        // spectators are not affected
+        if (sPlayer.isSpectator()) {
             return;
         }
 
@@ -168,113 +220,54 @@ public class PlayerListener implements Listener {
         this.playThunderSound(event.getEntity());
 
         // make spectator
-        this.playerManager.makeSpectator(playerName);
+        sPlayer.makePlayer();
+        sPlayer.hide();
 
-        event.getEntity().sendMessage(ChatColor.RED + "--------------------------------------------");
-        event.getEntity().sendMessage(ChatColor.RED + "YOU ARE DEAD!");
-        event.getEntity().sendMessage(ChatColor.RED + "--------------------------------------------");
+        // broadcast message to the game
+        sPlayer.broadcast(ChatColor.RED + SurvivalGame.LIMITER);
+        sPlayer.broadcast(ChatColor.RED + "YOU ARE DEAD!");
+        sPlayer.broadcast(ChatColor.RED + SurvivalGame.LIMITER);
 
+        // remove deathmessage
         event.setDeathMessage(null);
 
-        if (this.playerManager.getPlayerCount() > 1) {
-            Chat.broadcast(ChatColor.DARK_GREEN, "Another one bites the dust...");
-            Chat.broadcast(ChatColor.GRAY, this.playerManager.getPlayerCount() + " survivors are still alive!");
-        }
-
-        this.gameManager.checkForWinner();
+        // update game
+        sPlayer.getCurrentGame().onPlayerDeath(sPlayer);
     }
 
-    @EventHandler
-    public void onPlayerRespawn(PlayerRespawnEvent event) {
-        if (!this.gameManager.isInGame()) {
-            event.setRespawnLocation(Settings.getLobbySpawn().getLocation());
-            return;
-        }
-
-        String playerName = event.getPlayer().getName();
-        if (this.playerManager.isSpectator(playerName)) {
-            this.playerManager.hidePlayer(playerName);
-            event.setRespawnLocation(Settings.getSpectatorSpawn().getLocation());
-        }
-    }
-
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onFoodLevelChange(FoodLevelChangeEvent event) {
+        // we need a player fo this
         if (!event.getEntityType().equals(EntityType.PLAYER)) {
             return;
         }
 
+        // get the player
         Player player = (Player) event.getEntity();
-        if (this.playerManager.isSpectator(player.getName())) {
+        SurvivalPlayer sPlayer = this.gameManager.getPlayer(player.getName());
+        if (sPlayer == null) {
+            return;
+        }
+
+        // spectators are not hungry
+        if (sPlayer.isSpectator()) {
             event.setCancelled(true);
             event.setFoodLevel(20);
             return;
         }
     }
 
-    @EventHandler
-    public void onPlayerTeleport(PlayerTeleportEvent event) {
-        if (!this.gameManager.isInGame()) {
-            event.setTo(Settings.getLobbySpawn().getLocation());
-            return;
-        }
-
-        String playerName = event.getPlayer().getName();
-        if (this.playerManager.isSpectator(playerName)) {
-            this.playerManager.hidePlayer(playerName);
-        }
-    }
-
-    @EventHandler
-    public void onPlayerJoin(PlayerJoinEvent event) {
-        String playerName = event.getPlayer().getName();
-        if (this.gameManager.isInGame()) {
-            this.playerManager.makeSpectator(playerName);
-        } else {
-            this.playerManager.showPlayer(playerName);
-        }
-    }
-
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onPlayerDisconnect(PlayerQuitEvent event) {
         this.updatePlayerOnDisconnect(event.getPlayer());
     }
 
-    @EventHandler
-    public void onPlayerKick(PlayerKickEvent event) {
-        this.updatePlayerOnDisconnect(event.getPlayer());
-    }
-
-    @EventHandler
-    public void onPlayerItemPickUp(PlayerPickupItemEvent event) {
-        if (!this.gameManager.isInGame()) {
-            return;
-        }
-
-        String playerName = event.getPlayer().getName();
-        if (this.playerManager.isSpectator(playerName)) {
-            event.setCancelled(true);
-            return;
-        }
-    }
-
-    @EventHandler
-    public void onPlayerDropItem(PlayerDropItemEvent event) {
-        if (!this.gameManager.isInGame()) {
-            return;
-        }
-
-        String playerName = event.getPlayer().getName();
-        if (this.playerManager.isSpectator(playerName)) {
-            event.setCancelled(true);
-            return;
-        }
-    }
-
     private void updatePlayerOnDisconnect(Player player) {
-        String playerName = player.getName();
-        this.playerManager.removeFromPlayerList(playerName);
-        this.playerManager.removeFromSpectatorList(playerName);
+        // get the player
+        SurvivalPlayer sPlayer = this.gameManager.getPlayer(player.getName());
+        if (sPlayer == null) {
+            return;
+        }
 
         ItemStack[] contents = player.getInventory().getContents();
         for (ItemStack stack : contents) {
@@ -282,14 +275,66 @@ public class PlayerListener implements Listener {
                 player.getWorld().dropItemNaturally(player.getLocation(), stack);
             }
         }
+        Core.gameManager.playerQuitGame(sPlayer.getPlayerName());
+    }
 
-        if (this.gameManager.isInGame()) {
-            this.gameManager.checkForWinner();
+    @EventHandler(ignoreCancelled = true)
+    public void onPlayerKick(PlayerKickEvent event) {
+        this.updatePlayerOnDisconnect(event.getPlayer());
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onPlayerItemPickUp(PlayerPickupItemEvent event) {
+        // get the player
+        SurvivalPlayer sPlayer = this.gameManager.getPlayer(event.getPlayer().getName());
+        if (sPlayer == null) {
+            return;
+        }
+
+        // only vines, mushrooms, wheat and melons and other normal items can be pickedup
+        Material type = event.getItem().getItemStack().getType();
+        if (type.isBlock()) {
+            if (type.equals(Material.VINE) || type.equals(Material.BROWN_MUSHROOM) || type.equals(Material.RED_MUSHROOM) || type.equals(Material.MELON) || type.equals(Material.WHEAT)) {
+                return;
+            }
+            event.setCancelled(true);
+            return;
+        }
+
+        // disallow spectators to pickup anything
+        if (sPlayer.isSpectator()) {
+            event.setCancelled(true);
+            return;
+        }
+    }
+
+    @EventHandler(ignoreCancelled = true)
+    public void onPlayerDropItem(PlayerDropItemEvent event) {
+        // get the player
+        SurvivalPlayer sPlayer = this.gameManager.getPlayer(event.getPlayer().getName());
+        if (sPlayer == null) {
+            return;
+        }
+
+        // only vines, mushrooms, wheat and melons and other normal items can be dropped
+        Material type = event.getItemDrop().getItemStack().getType();
+        if (type.isBlock()) {
+            if (type.equals(Material.VINE) || type.equals(Material.BROWN_MUSHROOM) || type.equals(Material.RED_MUSHROOM) || type.equals(Material.MELON) || type.equals(Material.WHEAT)) {
+                return;
+            }
+            event.setCancelled(true);
+            return;
+        }
+
+        // disallow spectators to pickup anything
+        if (sPlayer.isSpectator()) {
+            event.setCancelled(true);
+            return;
         }
     }
 
     private void playThunderSound(Entity entity) {
         CraftWorld cWorld = (CraftWorld) entity.getWorld();
-        cWorld.getHandle().makeSound(((CraftEntity) entity).getHandle(), "ambient.weather.thunder", 10000.0F, 1.0F);
+        cWorld.getHandle().makeSound(((CraftEntity) entity).getHandle(), "ambient.weather.thunder", 10000.0F, 2.0F);
     }
 }

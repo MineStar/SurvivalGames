@@ -13,7 +13,7 @@ import org.bukkit.event.player.PlayerBucketEmptyEvent;
 import org.bukkit.event.player.PlayerBucketFillEvent;
 
 import de.minestar.survivalgames.Core;
-import de.minestar.survivalgames.data.Settings;
+import de.minestar.survivalgames.data.SurvivalPlayer;
 import de.minestar.survivalgames.manager.GameManager;
 
 public class BlockListener implements Listener {
@@ -24,10 +24,11 @@ public class BlockListener implements Listener {
         this.gameManager = Core.gameManager;
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onBucketEmpty(PlayerBucketEmptyEvent event) {
-        // game must be running
-        if (!this.gameManager.isInGame()) {
+        // get the player
+        SurvivalPlayer sPlayer = this.gameManager.getPlayer(event.getPlayer().getName());
+        if (sPlayer == null) {
             return;
         }
 
@@ -35,10 +36,11 @@ public class BlockListener implements Listener {
         event.setCancelled(true);
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onBucketFill(PlayerBucketFillEvent event) {
-        // game must be running
-        if (!this.gameManager.isInGame()) {
+        // get the player
+        SurvivalPlayer sPlayer = this.gameManager.getPlayer(event.getPlayer().getName());
+        if (sPlayer == null) {
             return;
         }
 
@@ -46,16 +48,17 @@ public class BlockListener implements Listener {
         event.setCancelled(true);
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onBlockPlace(BlockPlaceEvent event) {
-        // game must be running
-        if (!this.gameManager.isInGame()) {
+        // get the player
+        SurvivalPlayer sPlayer = this.gameManager.getPlayer(event.getPlayer().getName());
+        if (sPlayer == null) {
             return;
         }
 
         // validate blockplace
         Block block = event.getBlockPlaced();
-        if (Settings.isPlaceable(block.getType()) && Core.playerManager.isPlayer(event.getPlayer().getName())) {
+        if (sPlayer.getCurrentGame().getSettings().isPlaceable(block.getType()) && sPlayer.isPlayer()) {
             return;
         }
 
@@ -63,16 +66,17 @@ public class BlockListener implements Listener {
         event.setCancelled(true);
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onBlockBreak(BlockBreakEvent event) {
-        // game must be running
-        if (!this.gameManager.isInGame()) {
+        // get the player
+        SurvivalPlayer sPlayer = this.gameManager.getPlayer(event.getPlayer().getName());
+        if (sPlayer == null) {
             return;
         }
 
         // validate blockbreak
         Block block = event.getBlock();
-        if (Settings.isBreakable(block.getType()) && Core.playerManager.isPlayer(event.getPlayer().getName())) {
+        if (sPlayer.getCurrentGame().getSettings().isBreakable(block.getType()) && sPlayer.isPlayer()) {
             return;
         }
 
@@ -80,12 +84,12 @@ public class BlockListener implements Listener {
         event.setCancelled(true);
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onBlockSpread(BlockSpreadEvent event) {
         event.setCancelled(true);
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onBlockIgnite(BlockIgniteEvent event) {
         IgniteCause cause = event.getCause();
         if (cause.equals(IgniteCause.LAVA) || cause.equals(IgniteCause.SPREAD) || cause.equals(IgniteCause.LIGHTNING) || cause.equals(IgniteCause.FIREBALL)) {
@@ -93,7 +97,7 @@ public class BlockListener implements Listener {
         }
     }
 
-    @EventHandler
+    @EventHandler(ignoreCancelled = true)
     public void onBlockBurn(BlockBurnEvent event) {
         event.setCancelled(true);
     }

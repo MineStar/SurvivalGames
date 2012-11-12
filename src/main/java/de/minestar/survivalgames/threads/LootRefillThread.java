@@ -2,16 +2,21 @@ package de.minestar.survivalgames.threads;
 
 import java.util.TimerTask;
 
-import de.minestar.survivalgames.Core;
-import de.minestar.survivalgames.utils.Chat;
+import de.minestar.survivalgames.data.SurvivalGame;
 
 public class LootRefillThread extends TimerTask {
 
+    private final SurvivalGame game;
+
+    public LootRefillThread(SurvivalGame game) {
+        this.game = game;
+    }
+
     @Override
     public void run() {
-        if (Core.gameManager.isInGame() && !Core.gameManager.isInDeathmatch()) {
-            Core.lootManager.refillChests();
-            Chat.broadcastInfo("All chests have been refilled!");
+        if (this.game.isGameInPrePVP() || game.isGameInSurvival()) {
+            this.game.refillLoot();
+            this.game.broadcastInfo("All chests have been refilled!");
         }
     }
 }

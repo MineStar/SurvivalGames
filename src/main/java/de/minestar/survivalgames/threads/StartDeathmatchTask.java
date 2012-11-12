@@ -1,15 +1,24 @@
 package de.minestar.survivalgames.threads;
 
-import de.minestar.survivalgames.Core;
-import de.minestar.survivalgames.utils.Chat;
+import org.bukkit.ChatColor;
+
+import de.minestar.survivalgames.data.SurvivalGame;
 
 public class StartDeathmatchTask implements Runnable {
 
+    private final SurvivalGame game;
+
+    public StartDeathmatchTask(SurvivalGame game) {
+        this.game = game;
+    }
+
     @Override
     public void run() {
-        if (Core.gameManager.isInGame() && !Core.gameManager.isInDeathmatch()) {
-            Chat.broadcastInfo("Time for deathmatch!");
-            Core.gameManager.startDeathmatch();
+        if (this.game.isGameInSurvival()) {
+            this.game.broadcast(ChatColor.RED + SurvivalGame.LIMITER);
+            this.game.broadcastInfo("Time for deathmatch!");
+            this.game.broadcast(ChatColor.RED + SurvivalGame.LIMITER);
+            this.game.goToDeathmatch();
         }
     }
 

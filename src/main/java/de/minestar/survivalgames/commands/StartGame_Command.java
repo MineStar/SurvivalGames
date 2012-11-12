@@ -4,33 +4,32 @@ import org.bukkit.ChatColor;
 import org.bukkit.entity.Player;
 
 import de.minestar.survivalgames.Core;
-import de.minestar.survivalgames.data.Settings;
+import de.minestar.survivalgames.data.SurvivalPlayer;
 
 public class StartGame_Command {
 
-    public void execute(Player sender) {
-        if (Settings.getLobbySpawn() == null) {
-            sender.sendMessage(ChatColor.RED + "Lobbyspawn not set!");
+    public void execute(Player sender, String[] args) {
+        // check the argumentcount
+        if (args.length != 1) {
+            sender.sendMessage(ChatColor.RED + "Wrong syntax!");
+            sender.sendMessage(ChatColor.GRAY + "/game start");
             return;
         }
 
-        if (Settings.getSpectatorSpawn() == null) {
-            sender.sendMessage(ChatColor.RED + "Spectatorspawn not set!");
-            return;
-        }
-
-        if (Settings.getPlayerSpawns().size() < 2) {
-            sender.sendMessage(ChatColor.RED + "Too less playerspawns set!");
-            return;
-        }
-
-        if (Core.gameManager.isInGame()) {
-            sender.sendMessage(ChatColor.RED + "Game is already running!");
+        // get the player
+        SurvivalPlayer sPlayer = Core.gameManager.getPlayer(sender.getName());
+        if (sPlayer == null) {
+            sender.sendMessage(ChatColor.RED + "You are currently not in a survivalgame!");
             return;
         }
 
         sender.sendMessage(ChatColor.GREEN + "Executing command \"Start Game\"...");
-        Core.lootManager.clearChests();
-        Core.gameManager.preGame();
+
+        if (!sPlayer.getCurrentGame().isSetupComplete()) {
+            sender.sendMessage(ChatColor.RED + "Gamesetup is incomplete!");
+            return;
+        }
+
+        Core.gameManager.startGame(sPlayer.getCurrentGame().getGameName());
     }
 }

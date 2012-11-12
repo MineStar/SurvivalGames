@@ -6,26 +6,28 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 
 import de.minestar.survivalgames.Core;
-import de.minestar.survivalgames.data.Settings;
+import de.minestar.survivalgames.data.SurvivalGame;
 
-public class TimerDeathmatchStartThread extends TimerTask {
+public class TimerDeathmatchStart extends TimerTask {
 
     private final long finalTime;
+    private final SurvivalGame game;
 
-    public TimerDeathmatchStartThread(long finalTime) {
+    public TimerDeathmatchStart(SurvivalGame game, long finalTime) {
+        this.game = game;
         this.finalTime = finalTime;
     }
 
     @Override
     public void run() {
-        if (Core.gameManager.isInGame()) {
+        if (game.isGameInSurvival()) {
             long restMilli = finalTime - System.currentTimeMillis();
             final int restSeconds = (int) (restMilli / 1000);
             final int restMinutes = (int) (restSeconds / 60);
             if (restMinutes < 1) {
                 switch (restSeconds) {
                     case 0 : {
-                        Bukkit.getScheduler().scheduleSyncDelayedTask(Core.INSTANCE, new MessageTask(ChatColor.GRAY + "Deathmatch will start in " + (restSeconds + 1) + " second..."));
+                        Bukkit.getScheduler().scheduleSyncDelayedTask(Core.INSTANCE, new MessageTask(this.game, ChatColor.GRAY + "Deathmatch will start in " + (restSeconds + 1) + " second..."));
                         break;
                     }
                     case 1 :
@@ -40,8 +42,8 @@ public class TimerDeathmatchStartThread extends TimerTask {
                     case 14 :
                     case 29 :
                     case 44 : {
-                        if (Settings.getPreDeathmatchTime() != restSeconds + 1) {
-                            Bukkit.getScheduler().scheduleSyncDelayedTask(Core.INSTANCE, new MessageTask(ChatColor.GRAY + "Deathmatch will start in " + (restSeconds + 1) + " seconds..."));
+                        if (game.getSettings().getPreDeathmatchTime() != restSeconds + 1) {
+                            Bukkit.getScheduler().scheduleSyncDelayedTask(Core.INSTANCE, new MessageTask(this.game, ChatColor.GRAY + "Deathmatch will start in " + (restSeconds + 1) + " seconds..."));
                         }
                         break;
                     }
@@ -49,7 +51,7 @@ public class TimerDeathmatchStartThread extends TimerTask {
             } else {
                 switch (restSeconds) {
                     case 1 : {
-                        Bukkit.getScheduler().scheduleSyncDelayedTask(Core.INSTANCE, new MessageTask(ChatColor.GRAY + "Deathmatch will start in " + restMinutes + " minute..."));
+                        Bukkit.getScheduler().scheduleSyncDelayedTask(Core.INSTANCE, new MessageTask(this.game, ChatColor.GRAY + "Deathmatch will start in " + restMinutes + " minute..."));
                         break;
                     }
                     case 5 :
@@ -59,7 +61,7 @@ public class TimerDeathmatchStartThread extends TimerTask {
                     case 25 :
                     case 30 :
                     case 45 : {
-                        Bukkit.getScheduler().scheduleSyncDelayedTask(Core.INSTANCE, new MessageTask(ChatColor.GRAY + "Deathmatch will start in " + restMinutes + " minutes..."));
+                        Bukkit.getScheduler().scheduleSyncDelayedTask(Core.INSTANCE, new MessageTask(this.game, ChatColor.GRAY + "Deathmatch will start in " + restMinutes + " minutes..."));
                         break;
                     }
                 }

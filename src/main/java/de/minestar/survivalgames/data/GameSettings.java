@@ -17,87 +17,95 @@ import de.minestar.survivalgames.Core;
 import de.minestar.survivalgames.utils.Chat;
 import de.minestar.survivalgames.utils.LocationUtils;
 
-public class Settings {
+public class GameSettings {
 
-    private static HashSet<PlayerSpawn> playerSpawns;
-    private static PlayerSpawn spectatorSpawn = null, lobbySpawn = null;
-    private static File dataFolder, configFile, playerSpawnFile;
+    private HashSet<PlayerSpawn> playerSpawns;
+    private PlayerSpawn spectatorSpawn = null, lobbySpawn = null;
+    private File dataFolder, configFile, playerSpawnFile;
 
-    private static int preGameTime = 30;
-    private static int prePVPTime = 2 * 60;
-    private static int preDeathmatchTime = 28 * 60;
+    private int preGameTime = 30;
+    private int prePVPTime = 2 * 60;
+    private int preDeathmatchTime = 28 * 60;
+    private int afterMatchTime = 2 * 60;
 
-    private static HashSet<Integer> breakableBlocks = new HashSet<Integer>(Arrays.asList(Material.VINE.getId(), Material.MELON.getId(), Material.WHEAT.getId(), Material.BROWN_MUSHROOM.getId(), Material.RED_MUSHROOM.getId(), Material.SUGAR_CANE_BLOCK.getId(), Material.SAPLING.getId()));
-    private static HashSet<Integer> placeableBlocks = new HashSet<Integer>(Arrays.asList(Material.VINE.getId(), Material.CAKE_BLOCK.getId(), Material.CAKE.getId(), Material.SAPLING.getId()));
-    private static HashSet<Integer> nonUseableBlocks = new HashSet<Integer>(Arrays.asList(Material.DISPENSER.getId()));
-    private static ArrayList<Integer> lootRefillTimes = new ArrayList<Integer>(Arrays.asList(15));
+    private HashSet<Integer> breakableBlocks = new HashSet<Integer>(Arrays.asList(Material.VINE.getId(), Material.MELON.getId(), Material.WHEAT.getId(), Material.BROWN_MUSHROOM.getId(), Material.RED_MUSHROOM.getId(), Material.SUGAR_CANE_BLOCK.getId(), Material.SAPLING.getId()));
+    private HashSet<Integer> placeableBlocks = new HashSet<Integer>(Arrays.asList(Material.VINE.getId(), Material.CAKE_BLOCK.getId(), Material.CAKE.getId(), Material.SAPLING.getId()));
+    private HashSet<Integer> nonUseableBlocks = new HashSet<Integer>(Arrays.asList(Material.DISPENSER.getId()));
+    private ArrayList<Integer> lootRefillTimes = new ArrayList<Integer>(Arrays.asList(15));
 
-    private static int currentRefill = -1;
+    private int currentRefill = -1;
 
-    public static void init() {
-        Settings.dataFolder = Core.INSTANCE.getDataFolder();
-        Settings.configFile = new File(dataFolder, "config.yml");
-        Settings.playerSpawnFile = new File(Settings.dataFolder, "playerSpawns.yml");
-        Settings.loadConfig();
-        Settings.loadPlayerSpawns();
+    public GameSettings(String gameName) {
+        this.dataFolder = new File(Core.INSTANCE.getDataFolder() + System.getProperty("file.separator") + gameName);
+        this.dataFolder.mkdir();
+        this.configFile = new File(dataFolder, "config.yml");
+        this.playerSpawnFile = new File(this.dataFolder, "playerSpawns.yml");
+        this.loadConfig();
+        this.loadPlayerSpawns();
+        this.reset();
     }
 
-    private static void loadConfig() {
+    public void reset() {
+        this.currentRefill = this.lootRefillTimes.size() - 1;
+    }
+
+    private void loadConfig() {
         try {
             YamlConfiguration config = new YamlConfiguration();
-            if (!Settings.configFile.exists()) {
-                Settings.saveConfig();
+            if (!this.configFile.exists()) {
+                this.saveConfig();
             }
 
-            config.load(Settings.configFile);
+            // init YAML
+            config.load(this.configFile);
 
             // load timinigs
-            Settings.preGameTime = config.getInt("timings.game.preGame", Settings.preGameTime);
-            Settings.prePVPTime = config.getInt("timings.game.prePVP", Settings.prePVPTime);
-            Settings.preDeathmatchTime = config.getInt("timings.game.preDeathmatch", Settings.preDeathmatchTime);
+            this.preGameTime = config.getInt("timings.game.preGame", this.preGameTime);
+            this.prePVPTime = config.getInt("timings.game.prePVP", this.prePVPTime);
+            this.preDeathmatchTime = config.getInt("timings.game.preDeathmatch", this.preDeathmatchTime);
+            this.afterMatchTime = config.getInt("timings.game.afterMatch", this.afterMatchTime);
 
             // load refilltimes
-            Settings.lootRefillTimes = new ArrayList<Integer>();
+            this.lootRefillTimes = new ArrayList<Integer>();
             List<Integer> refillList = config.getIntegerList("timings.lootRefill");
             if (refillList != null) {
                 for (int ID : refillList) {
-                    Settings.lootRefillTimes.add(ID);
+                    this.lootRefillTimes.add(ID);
                 }
             }
-            Settings.currentRefill = Settings.lootRefillTimes.size() - 1;
 
             // load breakable blocks
-            Settings.breakableBlocks = new HashSet<Integer>();
+            this.breakableBlocks = new HashSet<Integer>();
             List<String> breakList = config.getStringList("blocks.breakable");
             if (breakList != null) {
                 for (String name : breakList) {
-                    int ID = Settings.StringToMaterialID(name);
+                    int ID = this.StringToMaterialID(name);
                     if (ID != Material.AIR.getId()) {
-                        Settings.breakableBlocks.add(ID);
+                        this.breakableBlocks.add(ID);
                     }
                 }
             }
 
             // load placeable blocks
-            Settings.placeableBlocks = new HashSet<Integer>();
+            this.placeableBlocks = new HashSet<Integer>();
             List<String> placeList = config.getStringList("blocks.placeable");
             if (placeList != null) {
                 for (String name : placeList) {
-                    int ID = Settings.StringToMaterialID(name);
+                    int ID = this.StringToMaterialID(name);
                     if (ID != Material.AIR.getId()) {
-                        Settings.placeableBlocks.add(ID);
+                        this.placeableBlocks.add(ID);
                     }
                 }
             }
 
             // load non useable blocks
-            Settings.nonUseableBlocks = new HashSet<Integer>();
+            this.nonUseableBlocks = new HashSet<Integer>();
             List<String> nonUseList = config.getStringList("blocks.nonUseable");
             if (nonUseList != null) {
                 for (String name : nonUseList) {
-                    int ID = Settings.StringToMaterialID(name);
+                    int ID = this.StringToMaterialID(name);
                     if (ID != Material.AIR.getId()) {
-                        Settings.nonUseableBlocks.add(ID);
+                        this.nonUseableBlocks.add(ID);
                     }
                 }
             }
@@ -106,25 +114,23 @@ public class Settings {
         }
     }
 
-    public static void saveConfig() {
+    public void saveConfig() {
         try {
             YamlConfiguration config = new YamlConfiguration();
-            if (Settings.configFile.exists()) {
-                Settings.configFile.delete();
-            }
 
             // save timings
-            config.set("timings.game.preGame", Settings.preGameTime);
-            config.set("timings.game.prePVP", Settings.prePVPTime);
-            config.set("timings.game.preDeathmatch", Settings.preDeathmatchTime);
+            config.set("timings.game.preGame", this.preGameTime);
+            config.set("timings.game.prePVP", this.prePVPTime);
+            config.set("timings.game.preDeathmatch", this.preDeathmatchTime);
+            config.set("timings.game.afterMatch", this.afterMatchTime);
 
             // save refilltimes
-            config.set("timings.lootRefill", Settings.lootRefillTimes);
+            config.set("timings.lootRefill", this.lootRefillTimes);
 
             // save breakable blocks
             ArrayList<String> data = new ArrayList<String>();
-            for (int ID : Settings.breakableBlocks) {
-                String name = Settings.IDToMaterialName(ID);
+            for (int ID : this.breakableBlocks) {
+                String name = this.IDToMaterialName(ID);
                 if (!name.equalsIgnoreCase("AIR")) {
                     data.add(name);
                 }
@@ -133,8 +139,8 @@ public class Settings {
 
             // save placeable blocks
             data = new ArrayList<String>();
-            for (int ID : Settings.placeableBlocks) {
-                String name = Settings.IDToMaterialName(ID);
+            for (int ID : this.placeableBlocks) {
+                String name = this.IDToMaterialName(ID);
                 if (!name.equalsIgnoreCase("AIR")) {
                     data.add(name);
                 }
@@ -143,8 +149,8 @@ public class Settings {
 
             // save non useable blocks
             data = new ArrayList<String>();
-            for (int ID : Settings.nonUseableBlocks) {
-                String name = Settings.IDToMaterialName(ID);
+            for (int ID : this.nonUseableBlocks) {
+                String name = this.IDToMaterialName(ID);
                 if (!name.equalsIgnoreCase("AIR")) {
                     data.add(name);
                 }
@@ -152,22 +158,22 @@ public class Settings {
             config.set("blocks.nonUseable", Lists.newArrayList(data));
 
             // save to file
-            config.save(Settings.configFile);
+            config.save(this.configFile);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private static void loadPlayerSpawns() {
+    private void loadPlayerSpawns() {
         try {
             playerSpawns = new HashSet<PlayerSpawn>();
             YamlConfiguration config = new YamlConfiguration();
-            if (!Settings.playerSpawnFile.exists()) {
-                Settings.playerSpawnFile.createNewFile();
+            if (!this.playerSpawnFile.exists()) {
+                this.playerSpawnFile.createNewFile();
             }
 
             // load playerspawns
-            config.load(Settings.playerSpawnFile);
+            config.load(this.playerSpawnFile);
             List<String> locList = config.getStringList("game.playerSpawns");
             int IDCount = 0;
             if (locList != null) {
@@ -187,7 +193,7 @@ public class Settings {
             if (!text.equalsIgnoreCase("NULL")) {
                 Location location = LocationUtils.fromString(text);
                 if (location != null) {
-                    Settings.spectatorSpawn = new PlayerSpawn(-1, location);
+                    this.spectatorSpawn = new PlayerSpawn(-1, location);
                 }
             }
 
@@ -196,7 +202,7 @@ public class Settings {
             if (!text.equalsIgnoreCase("NULL")) {
                 Location location = LocationUtils.fromString(text);
                 if (location != null) {
-                    Settings.lobbySpawn = new PlayerSpawn(-1, location);
+                    this.lobbySpawn = new PlayerSpawn(-1, location);
                 }
             }
 
@@ -206,38 +212,38 @@ public class Settings {
         }
     }
 
-    public static void savePlayerSpawns() {
+    public void savePlayerSpawns() {
         try {
             YamlConfiguration config = new YamlConfiguration();
-            if (Settings.configFile.exists()) {
-                Settings.configFile.delete();
+            if (this.configFile.exists()) {
+                this.configFile.delete();
             }
 
             // save playerspawns
             ArrayList<String> locList = new ArrayList<String>();
-            for (PlayerSpawn spawn : Settings.playerSpawns) {
+            for (PlayerSpawn spawn : this.playerSpawns) {
                 locList.add(LocationUtils.toString(spawn.getLocation()));
             }
             config.set("game.playerSpawns", locList);
 
             // save spectatorspawn
-            if (Settings.spectatorSpawn != null) {
-                config.set("game.spectatorSpawn", LocationUtils.toString(Settings.spectatorSpawn.getLocation()));
+            if (this.spectatorSpawn != null) {
+                config.set("game.spectatorSpawn", LocationUtils.toString(this.spectatorSpawn.getLocation()));
             }
 
             // save lobbyspawn
-            if (Settings.lobbySpawn != null) {
-                config.set("game.lobbySpawn", LocationUtils.toString(Settings.lobbySpawn.getLocation()));
+            if (this.lobbySpawn != null) {
+                config.set("game.lobbySpawn", LocationUtils.toString(this.lobbySpawn.getLocation()));
             }
 
             // save to file
-            config.save(Settings.playerSpawnFile);
+            config.save(this.playerSpawnFile);
         } catch (Exception e) {
             e.printStackTrace();
         }
     }
 
-    private static int StringToMaterialID(String text) {
+    private int StringToMaterialID(String text) {
         for (Material material : Material.values()) {
             if (material.name().equalsIgnoreCase(text) || material.name().replace("_", "").equalsIgnoreCase(text)) {
                 return material.getId();
@@ -246,7 +252,7 @@ public class Settings {
         return Material.AIR.getId();
     }
 
-    private static String IDToMaterialName(int ID) {
+    private String IDToMaterialName(int ID) {
         Material material = Material.getMaterial(ID);
         if (material != null) {
             return material.name();
@@ -254,33 +260,33 @@ public class Settings {
         return "AIR";
     }
 
-    public static int getNextRefillTime() {
-        if (Settings.currentRefill < 0) {
+    public int getNextRefillTime() {
+        if (this.currentRefill < 0) {
             return 0;
         }
-        int nextTime = Settings.lootRefillTimes.get(Settings.currentRefill);
-        Settings.currentRefill--;
+        int nextTime = this.lootRefillTimes.get(this.currentRefill);
+        this.currentRefill--;
         return nextTime;
     }
 
     /**
      * @return the playerSpawns
      */
-    public static HashSet<PlayerSpawn> getPlayerSpawns() {
+    public HashSet<PlayerSpawn> getPlayerSpawns() {
         return playerSpawns;
     }
 
     /**
      * @return the preGameTime
      */
-    public static long getPreGameTime() {
+    public long getPreGameTime() {
         return preGameTime;
     }
 
     /**
      * @return the prePVPTime
      */
-    public static long getPrePVPTime() {
+    public long getPrePVPTime() {
         return prePVPTime;
     }
 
@@ -288,67 +294,82 @@ public class Settings {
      * @param playerSpawns
      *            the playerSpawns to set
      */
-    public static void setPlayerSpawns(HashSet<PlayerSpawn> playerSpawns) {
-        Settings.playerSpawns = playerSpawns;
+    public void setPlayerSpawns(HashSet<PlayerSpawn> playerSpawns) {
+        this.playerSpawns = playerSpawns;
     }
 
     /**
      * @param spectatorSpawn
      *            the spectatorSpawn to set
      */
-    public static void setSpectatorSpawn(PlayerSpawn spectatorSpawn) {
-        Settings.spectatorSpawn = spectatorSpawn;
+    public void setSpectatorSpawn(PlayerSpawn spectatorSpawn) {
+        this.spectatorSpawn = spectatorSpawn;
     }
 
     /**
      * @param lobbySpawn
      *            the lobbySpawn to set
      */
-    public static void setLobbySpawn(PlayerSpawn lobbySpawn) {
-        Settings.lobbySpawn = lobbySpawn;
+    public void setLobbySpawn(PlayerSpawn lobbySpawn) {
+        this.lobbySpawn = lobbySpawn;
     }
 
     /**
      * @param preGameTime
      *            the preGameTime to set
      */
-    public static void setPreGameTime(int preGameTime) {
-        Settings.preGameTime = preGameTime;
+    public void setPreGameTime(int preGameTime) {
+        this.preGameTime = preGameTime;
     }
 
     /**
      * @param prePVPTime
      *            the prePVPTime to set
      */
-    public static void setPrePVPTime(int prePVPTime) {
-        Settings.prePVPTime = prePVPTime;
+    public void setPrePVPTime(int prePVPTime) {
+        this.prePVPTime = prePVPTime;
     }
 
     /**
      * @param preDeathmatchTime
      *            the preDeathmatchTime to set
      */
-    public static void setPreDeathmatchTime(int preDeathmatchTime) {
-        Settings.preDeathmatchTime = preDeathmatchTime;
+    public void setPreDeathmatchTime(int preDeathmatchTime) {
+        this.preDeathmatchTime = preDeathmatchTime;
     }
 
     /**
      * @return the preDeathmatchTime
      */
-    public static long getPreDeathmatchTime() {
+    public long getPreDeathmatchTime() {
         return preDeathmatchTime;
     }
 
-    public static PlayerSpawn getSpectatorSpawn() {
+    /**
+     * @return the afterMatchTime
+     */
+    public int getAfterMatchTime() {
+        return afterMatchTime;
+    }
+
+    /**
+     * @param afterMatchTime
+     *            the afterMatchTime to set
+     */
+    public void setAfterMatchTime(int afterMatchTime) {
+        this.afterMatchTime = afterMatchTime;
+    }
+
+    public PlayerSpawn getSpectatorSpawn() {
         return spectatorSpawn;
     }
 
-    public static PlayerSpawn getLobbySpawn() {
+    public PlayerSpawn getLobbySpawn() {
         return lobbySpawn;
     }
 
-    public static PlayerSpawn getPlayerSpawnByID(int ID) {
-        for (PlayerSpawn spawn : Settings.playerSpawns) {
+    public PlayerSpawn getPlayerSpawnByID(int ID) {
+        for (PlayerSpawn spawn : this.playerSpawns) {
             if (spawn.getID() == ID) {
                 return spawn;
             }
@@ -356,42 +377,42 @@ public class Settings {
         return null;
     }
 
-    public static boolean addPlayerSpawn(PlayerSpawn spawn) {
-        if (Settings.playerSpawns.contains(spawn)) {
+    public boolean addPlayerSpawn(PlayerSpawn spawn) {
+        if (this.playerSpawns.contains(spawn)) {
             return false;
         }
-        Settings.playerSpawns.add(spawn);
-        Settings.savePlayerSpawns();
-        Settings.loadPlayerSpawns();
+        this.playerSpawns.add(spawn);
+        this.savePlayerSpawns();
+        this.loadPlayerSpawns();
         return true;
     }
 
-    public static boolean removePlayerSpawn(int ID) {
-        PlayerSpawn spawn = Settings.getPlayerSpawnByID(ID);
+    public boolean removePlayerSpawn(int ID) {
+        PlayerSpawn spawn = this.getPlayerSpawnByID(ID);
         if (spawn == null) {
             return false;
         }
-        return Settings.removePlayerSpawn(spawn);
+        return this.removePlayerSpawn(spawn);
     }
 
-    public static boolean removePlayerSpawn(PlayerSpawn spawn) {
-        if (!Settings.playerSpawns.contains(spawn)) {
+    public boolean removePlayerSpawn(PlayerSpawn spawn) {
+        if (!this.playerSpawns.contains(spawn)) {
             return false;
         }
-        Settings.playerSpawns.remove(spawn);
-        Settings.savePlayerSpawns();
+        this.playerSpawns.remove(spawn);
+        this.savePlayerSpawns();
         return true;
     }
 
-    public static boolean isBreakable(Material material) {
-        return Settings.breakableBlocks.contains(material.getId());
+    public boolean isBreakable(Material material) {
+        return this.breakableBlocks.contains(material.getId());
     }
 
-    public static boolean isPlaceable(Material material) {
-        return Settings.placeableBlocks.contains(material.getId());
+    public boolean isPlaceable(Material material) {
+        return this.placeableBlocks.contains(material.getId());
     }
 
-    public static boolean isNonUseable(Material material) {
-        return Settings.nonUseableBlocks.contains(material.getId());
+    public boolean isNonUseable(Material material) {
+        return this.nonUseableBlocks.contains(material.getId());
     }
 }

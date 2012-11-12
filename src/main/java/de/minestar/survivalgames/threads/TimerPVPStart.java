@@ -6,19 +6,21 @@ import org.bukkit.Bukkit;
 import org.bukkit.ChatColor;
 
 import de.minestar.survivalgames.Core;
-import de.minestar.survivalgames.data.Settings;
+import de.minestar.survivalgames.data.SurvivalGame;
 
-public class TimerPVPStartThread extends TimerTask {
+public class TimerPVPStart extends TimerTask {
 
     private final long finalTime;
+    private final SurvivalGame game;
 
-    public TimerPVPStartThread(long finalTime) {
+    public TimerPVPStart(SurvivalGame game, long finalTime) {
+        this.game = game;
         this.finalTime = finalTime;
     }
 
     @Override
     public void run() {
-        if (Core.gameManager.isInGame()) {
+        if (game.isGameInPrePVP()) {
             long restMilli = finalTime - System.currentTimeMillis();
             final int restSeconds = (int) (restMilli / 1000);
             final int restMinutes = (int) (restSeconds / 60);
@@ -27,8 +29,8 @@ public class TimerPVPStartThread extends TimerTask {
                     case 14 :
                     case 29 :
                     case 44 : {
-                        if (Settings.getPrePVPTime() != restSeconds + 1) {
-                            Bukkit.getScheduler().scheduleSyncDelayedTask(Core.INSTANCE, new MessageTask(ChatColor.GRAY + "PVP will be enabled in " + (restSeconds + 1) + " seconds..."));
+                        if (game.getSettings().getPrePVPTime() != restSeconds + 1) {
+                            Bukkit.getScheduler().scheduleSyncDelayedTask(Core.INSTANCE, new MessageTask(this.game, ChatColor.GRAY + "PVP will be enabled in " + (restSeconds + 1) + " seconds..."));
                         }
                         break;
                     }
@@ -36,14 +38,14 @@ public class TimerPVPStartThread extends TimerTask {
             } else {
                 switch (restSeconds) {
                     case 1 : {
-                        Bukkit.getScheduler().scheduleSyncDelayedTask(Core.INSTANCE, new MessageTask(ChatColor.GRAY + "PVP will be enabled in " + restMinutes + " minute..."));
+                        Bukkit.getScheduler().scheduleSyncDelayedTask(Core.INSTANCE, new MessageTask(this.game, ChatColor.GRAY + "PVP will be enabled in " + restMinutes + " minute..."));
                         break;
                     }
                     case 2 :
                     case 3 :
                     case 4 :
                     case 5 : {
-                        Bukkit.getScheduler().scheduleSyncDelayedTask(Core.INSTANCE, new MessageTask(ChatColor.GRAY + "PVP will be enabled in " + restMinutes + " minutes..."));
+                        Bukkit.getScheduler().scheduleSyncDelayedTask(Core.INSTANCE, new MessageTask(this.game, ChatColor.GRAY + "PVP will be enabled in " + restMinutes + " minutes..."));
                         break;
                     }
                 }

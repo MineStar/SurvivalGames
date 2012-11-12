@@ -28,10 +28,23 @@ public class LocationUtils {
         }
     }
 
-    public static boolean equals(Location location, Location other) {
+    public static boolean equalsXZ(Location location, Location other) {
+        if (location.getBlockX() != other.getBlockX()) {
+            return false;
+        }
+
+        if (location.getBlockZ() != other.getBlockZ()) {
+            return false;
+        }
+
         if (!location.getWorld().getName().equalsIgnoreCase(other.getWorld().getName())) {
             return false;
         }
+
+        return true;
+    }
+
+    public static boolean equals(Location location, Location other) {
 
         if (location.getBlockX() != other.getBlockX()) {
             return false;
@@ -42,6 +55,10 @@ public class LocationUtils {
         }
 
         if (location.getBlockZ() != other.getBlockZ()) {
+            return false;
+        }
+
+        if (!location.getWorld().getName().equalsIgnoreCase(other.getWorld().getName())) {
             return false;
         }
 
