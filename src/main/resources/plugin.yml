@@ -1,9 +1,9 @@
-name: SurvivalGames
-main: de.minestar.survivalgames.Core
+name: CraftZ
+main: de.minestar.craftz.Core
 version: ${pom.version}
 commands:
     game:
-        description: SurvivalGames-Related commands
+        description: CraftZ-Related commands
         usage: /game <cmd 1> ... <cmd n>
     ready:
         description: SurvivalGames-Related commands
