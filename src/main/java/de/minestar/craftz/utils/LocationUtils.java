@@ -7,12 +7,20 @@ import org.bukkit.World;
 public class LocationUtils {
 
     public static String toString(Location location) {
-        return location.getWorld().getName() + "_" + location.getX() + "_" + location.getY() + "_" + location.getZ() + "_" + location.getYaw() + "_" + location.getPitch();
+        return toString(location, null);
+    }
+
+    public static String toString(Location location, String appendix) {
+        if (appendix != null && appendix.length() > 0) {
+            return location.getWorld().getName() + "_" + location.getX() + "_" + location.getY() + "_" + location.getZ() + "_" + location.getYaw() + "_" + location.getPitch() + "_" + appendix;
+        } else {
+            return location.getWorld().getName() + "_" + location.getX() + "_" + location.getY() + "_" + location.getZ() + "_" + location.getYaw() + "_" + location.getPitch();
+        }
     }
 
     public static Location fromString(String text) {
         String[] split = text.split("_");
-        if (split.length != 6) {
+        if (split.length < 6) {
             return null;
         }
 

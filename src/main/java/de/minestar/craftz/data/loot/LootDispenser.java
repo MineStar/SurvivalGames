@@ -5,72 +5,72 @@ import java.util.ArrayList;
 
 import org.bukkit.Location;
 import org.bukkit.Material;
-import org.bukkit.block.Chest;
+import org.bukkit.block.Dispenser;
 import org.bukkit.craftbukkit.v1_4_6.inventory.CraftInventory;
 import org.bukkit.inventory.Inventory;
 import org.bukkit.inventory.ItemStack;
 
 import de.minestar.craftz.data.Loot;
 
-public class LootChest extends AbstractLootspot {
+public class LootDispenser extends AbstractLootspot {
 
-    public LootChest(File dataFolder, Location location, ArrayList<Loot> lootList, byte subID) {
-        super(dataFolder, location, lootList, Material.CHEST.getId(), subID, 27);
+    public LootDispenser(File dataFolder, Location location, ArrayList<Loot> lootList, byte subID) {
+        super(dataFolder, location, lootList, Material.DISPENSER.getId(), subID, 9);
     }
 
-    public Chest getChest() {
-        if (!location.getBlock().getType().equals(Material.CHEST)) {
-            location.getBlock().setType(Material.CHEST);
+    public Dispenser getDispenser() {
+        if (!location.getBlock().getType().equals(Material.DISPENSER)) {
+            location.getBlock().setType(Material.DISPENSER);
         }
-        return (Chest) (location.getBlock().getState());
+        return (Dispenser) (location.getBlock().getState());
     }
 
     @Override
     public void showLoot() {
-        Chest chest = this.getChest();
-        if (chest == null) {
+        Dispenser dispenser = this.getDispenser();
+        if (dispenser == null) {
             return;
         }
 
         this.clearLootspot();
         int index = 0;
         for (Loot loot : this.lootList) {
-            chest.getBlockInventory().setItem(index, loot.getItemStack());
+            dispenser.getInventory().setItem(index, loot.getItemStack());
             index++;
         }
     }
 
     @Override
     public void clearLootspot() {
-        Chest chest = this.getChest();
-        if (chest == null) {
+        Dispenser dispenser = this.getDispenser();
+        if (dispenser == null) {
             return;
         }
-        for (int itemIndex = 0; itemIndex < chest.getBlockInventory().getSize(); itemIndex++) {
-            chest.getBlockInventory().setItem(itemIndex, null);
+        for (int itemIndex = 0; itemIndex < dispenser.getInventory().getSize(); itemIndex++) {
+            dispenser.getInventory().setItem(itemIndex, null);
         }
     }
 
     @Override
     protected void fillWithRandomItems() {
-        Chest chest = this.getChest();
-        if (chest == null) {
+        Dispenser dispenser = this.getDispenser();
+        if (dispenser == null) {
             return;
         }
 
         int itemAmount = 0;
         double randomNumber = this.random.nextDouble();
-        if (randomNumber < 0.15d) {
+        if (randomNumber < 0.25d) {
             itemAmount = 1;
         } else if (randomNumber < 0.52d) {
             itemAmount = 2;
-        } else if (randomNumber < 0.72d) {
+        } else if (randomNumber < 0.78d) {
             itemAmount = 3;
-        } else if (randomNumber < 0.83d) {
+        } else if (randomNumber < 0.87d) {
             itemAmount = 4;
-        } else if (randomNumber <= 0.91d) {
+        } else if (randomNumber <= 0.93d) {
             itemAmount = 5;
-        } else if (randomNumber <= 0.95d) {
+        } else if (randomNumber <= 0.98d) {
             itemAmount = 6;
         } else {
             itemAmount = 2;
@@ -86,8 +86,8 @@ public class LootChest extends AbstractLootspot {
             }
             loot.setUsed(true);
             int itemSlot = (int) (this.random.nextDouble() * INVENTORY_SIZE);
-            if (chest.getBlockInventory().getItem(itemSlot) == null || chest.getBlockInventory().getItem(itemSlot).getType().equals(Material.AIR)) {
-                chest.getBlockInventory().setItem(itemSlot, loot.getItemStack());
+            if (dispenser.getInventory().getItem(itemSlot) == null || dispenser.getInventory().getItem(itemSlot).getType().equals(Material.AIR)) {
+                dispenser.getInventory().setItem(itemSlot, loot.getItemStack());
                 done++;
             }
         }
@@ -98,13 +98,13 @@ public class LootChest extends AbstractLootspot {
 
     @Override
     public void updateLootContentsFromInventory() {
-        Chest chest = this.getChest();
-        if (chest == null) {
+        Dispenser dispenser = this.getDispenser();
+        if (dispenser == null) {
             return;
         }
 
         this.lootList.clear();
-        ItemStack[] contents = chest.getBlockInventory().getContents();
+        ItemStack[] contents = dispenser.getInventory().getContents();
         for (ItemStack stack : contents) {
             if (stack == null || stack.getType().equals(Material.AIR)) {
                 continue;
@@ -115,11 +115,11 @@ public class LootChest extends AbstractLootspot {
 
     @Override
     protected CraftInventory getCraftInventory() {
-        Chest chest = this.getChest();
-        if (chest == null) {
+        Dispenser dispenser = this.getDispenser();
+        if (dispenser == null) {
             return null;
         }
-        Inventory inventory = chest.getBlockInventory();
+        Inventory inventory = dispenser.getInventory();
         return (CraftInventory) inventory;
     }
 

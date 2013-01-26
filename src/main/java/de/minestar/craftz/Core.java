@@ -25,6 +25,9 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.plugin.java.JavaPlugin;
 
+import de.minestar.craftz.commands.CreateGame_Command;
+import de.minestar.craftz.commands.JoinGame_Command;
+import de.minestar.craftz.commands.QuitGame_Command;
 import de.minestar.craftz.commands.Ready_Command;
 import de.minestar.craftz.commands.SetLobbySpawn_Command;
 import de.minestar.craftz.commands.SetPlayerSpawn_Command;
@@ -67,7 +70,7 @@ public class Core extends JavaPlugin {
 
         Player[] playerList = Bukkit.getOnlinePlayers();
         for (Player player : playerList) {
-            Core.gameManager.getMainGame().joinGame(player.getName());
+            Core.gameManager.playerJoinGame(Core.gameManager.getMainGame().getGameName(), player.getName());
         }
 
         // print info
@@ -102,8 +105,11 @@ public class Core extends JavaPlugin {
 
         if (sender instanceof Player) {
             if (args[0].equalsIgnoreCase("create")) {
-                // new CreateGame_Command().execute((Player) sender, args);
-                sender.sendMessage(ChatColor.RED + "Command disabled!");
+                if (sender.isOp()) {
+                    new CreateGame_Command().execute((Player) sender, args);
+                } else {
+                    sender.sendMessage(ChatColor.RED + "Command disabled!");
+                }
                 return true;
             }
             if (args[0].equalsIgnoreCase("start")) {
@@ -115,13 +121,19 @@ public class Core extends JavaPlugin {
                 return true;
             }
             if (args[0].equalsIgnoreCase("join")) {
-                // new JoinGame_Command().execute((Player) sender, args);
-                sender.sendMessage(ChatColor.RED + "Command disabled!");
+                if (sender.isOp()) {
+                    new JoinGame_Command().execute((Player) sender, args);
+                } else {
+                    sender.sendMessage(ChatColor.RED + "Command disabled!");
+                }
                 return true;
             }
             if (args[0].equalsIgnoreCase("quit")) {
-                // new QuitGame_Command().execute((Player) sender, args);
-                sender.sendMessage(ChatColor.RED + "Command disabled!");
+                if (sender.isOp()) {
+                    new QuitGame_Command().execute((Player) sender, args);
+                } else {
+                    sender.sendMessage(ChatColor.RED + "Command disabled!");
+                }
                 return true;
             }
             if (args[0].equalsIgnoreCase("setLobby")) {

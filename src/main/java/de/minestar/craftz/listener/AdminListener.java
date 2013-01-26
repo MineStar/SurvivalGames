@@ -91,13 +91,8 @@ public class AdminListener implements Listener {
                     return;
                 } else {
                     // CREATE LOOTSPOT
-                    boolean success = false;
-                    if (isChest) {
-                        success = sPlayer.getCurrentGame().getLootManager().addChest(block.getLocation());
-                    } else if (isDispenser) {
-                        success = sPlayer.getCurrentGame().getLootManager().addDispenser(block.getLocation());
-                    }
-                    if (success) {
+                    lootSpot = sPlayer.getCurrentGame().getLootManager().addLootSpot(block.getLocation());
+                    if (lootSpot != null) {
                         lootSpot = sPlayer.getCurrentGame().getLootManager().getLootspot(block.getLocation());
                         lootSpot.updateLootContentsFromInventory();
                         lootSpot.saveLoot();

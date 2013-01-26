@@ -40,22 +40,27 @@ public class LootManager {
         File[] files = this.dataFolder.listFiles();
         int lootItemCount = 0;
         for (File file : files) {
+            String fileName = file.getName().trim();
+            String cleanFileName = fileName.replace(".dat", "").replace("_", " , ");
             try {
-                String fileName = file.getName().trim();
                 if (fileName.endsWith(".dat")) {
                     // get the location
                     Location location = LocationUtils.fromString(fileName.replace(".dat", ""));
                     if (location == null) {
-                        Chat.printMessage(ChatColor.RED, "Unable to load lootspot @ " + fileName.replace(".dat", ""));
+                        Chat.printMessage(ChatColor.RED, "Unable to load lootspot @ " + cleanFileName);
                         continue;
                     }
 
+                    // get the material
+                    String split[] = fileName.replace(".dat", "").split("_");
+                    int typeID = Integer.valueOf(split[6]);
+                    byte subID = Byte.valueOf(split[7]);
+
                     // is the lootspot valid?
-                    boolean isChest = location.getBlock().getType().equals(Material.CHEST);
-                    boolean isDispenser = location.getBlock().getType().equals(Material.DISPENSER);
-                    if (!isChest && !isDispenser) {
-                        Chat.printMessage(ChatColor.RED, "Lootspot @ " + fileName.replace(".dat", "") + " is invalid!");
-                        continue;
+                    if (location.getBlock().getTypeId() != typeID || location.getBlock().getData() != subID) {
+                        location.getBlock().setTypeIdAndData(typeID, subID, false);
+                        location.getBlock().setData(subID, false);
+                        Chat.printMessage(ChatColor.RED, "Recreating lootspot @ " + cleanFileName);
                     }
 
                     // load loot
@@ -69,33 +74,50 @@ public class LootManager {
                     }
 
                     // add to lootlist
-                    if (isChest) {
-                        this.lootspots.add(new LootChest(this.dataFolder, location, lootList));
-                    } else if (isDispenser) {
-                        this.lootspots.add(new LootDispenser(this.dataFolder, location, lootList));
+                    AbstractLootspot lootSpot = this.addLootSpot(location);
+                    if (lootSpot != null) {
+                        this.lootspots.add(lootSpot);
+                    } else {
+                        Chat.printMessage(ChatColor.RED, "Unable to load lootspot @ " + cleanFileName);
                     }
                 }
             } catch (Exception e) {
+                Chat.printMessage(ChatColor.RED, "Unable to load lootspot @ " + cleanFileName);
                 e.printStackTrace();
             }
         }
-        Chat.printMessage(ChatColor.GREEN, "Loaded " + this.lootspots.size() + " chests with " + lootItemCount + " items!");
+        Chat.printMessage(ChatColor.GREEN, "Loaded " + this.lootspots.size() + " lootspots with " + lootItemCount + " items!");
     }
 
-    public boolean addChest(Location location) {
+    public AbstractLootspot addLootSpot(Location location) {
         if (this.getLootspot(location) != null) {
-            return false;
+            return null;
         }
-        this.lootspots.add(new LootChest(this.dataFolder, location, new ArrayList<Loot>()));
-        return true;
+
+        final int typeID = location.getBlock().getTypeId();
+        switch (typeID) {
+            case 54 : { // CHEST
+                return this.addChest(location);
+            }
+            case 23 : { // DISPENSER
+                return this.addDispenser(location);
+            }
+            default : {
+                return null;
+            }
+        }
     }
 
-    public boolean addDispenser(Location location) {
-        if (this.getLootspot(location) != null) {
-            return false;
-        }
-        this.lootspots.add(new LootDispenser(this.dataFolder, location, new ArrayList<Loot>()));
-        return true;
+    private AbstractLootspot addChest(Location location) {
+        AbstractLootspot lootSpot = new LootChest(this.dataFolder, location, new ArrayList<Loot>(), location.getBlock().getData());
+        this.lootspots.add(lootSpot);
+        return lootSpot;
+    }
+
+    private AbstractLootspot addDispenser(Location location) {
+        AbstractLootspot lootSpot = new LootDispenser(this.dataFolder, location, new ArrayList<Loot>(), location.getBlock().getData());
+        this.lootspots.add(lootSpot);
+        return lootSpot;
     }
 
     public AbstractLootspot getLootspot(Location location) {
